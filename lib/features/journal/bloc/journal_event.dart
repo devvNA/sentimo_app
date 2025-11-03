@@ -49,12 +49,16 @@ class JournalDeleteRequested extends JournalEvent {
 class JournalSentimentUpdateRequested extends JournalEvent {
   final String id;
   final String sentimentLabel;
+  final double? sentimentScore;
+  final List<String>? sentimentTags;
 
   const JournalSentimentUpdateRequested({
     required this.id,
     required this.sentimentLabel,
+    this.sentimentScore,
+    this.sentimentTags,
   });
 
   @override
-  List<Object?> get props => [id, sentimentLabel];
+  List<Object?> get props => [id, sentimentLabel, sentimentScore, sentimentTags];
 }

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../entities/journal_entry.dart';
 import '../theme/app_theme.dart';
+import '../../features/journal/presentation/entry_detail_page.dart';
+import '../../features/journal/bloc/journal_bloc.dart';
 
 class JournalEntryCard extends StatelessWidget {
   final JournalEntry entry;
@@ -49,7 +52,17 @@ class JournalEntryCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
-        onTap: onTap,
+        onTap: onTap ??
+            () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<JournalBloc>(),
+                    child: EntryDetailPage(entry: entry),
+                  ),
+                ),
+              );
+            },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(20),

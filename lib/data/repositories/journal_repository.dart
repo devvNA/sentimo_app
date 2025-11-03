@@ -66,11 +66,15 @@ class JournalRepository {
     required String id,
     String? content,
     String? sentimentLabel,
+    double? sentimentScore,
+    List<String>? sentimentTags,
   }) async {
     try {
       final updates = <String, dynamic>{};
       if (content != null) updates['content'] = content;
       if (sentimentLabel != null) updates['sentiment_label'] = sentimentLabel;
+      if (sentimentScore != null) updates['sentiment_score'] = sentimentScore;
+      if (sentimentTags != null) updates['sentiment_tags'] = sentimentTags;
 
       if (updates.isEmpty) {
         throw Exception('No fields to update');

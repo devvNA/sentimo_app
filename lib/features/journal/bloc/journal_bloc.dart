@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/entities/journal_entry.dart';
 import '../../../data/repositories/journal_repository.dart';
 import '../../../data/services/sentiment_service.dart';
 import 'journal_event.dart';
@@ -77,13 +78,15 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
 
   void _analyzeSentimentAsync(String entryId, String content) async {
     try {
-      // Analyze sentiment using Gemini API
-      final sentiment = await _sentimentService.analyzeSentiment(content);
+      // Analyze sentiment using Gemini API with complete data
+      final sentimentData = await _sentimentService.analyzeSentimentComplete(content);
       
-      // Update the entry with sentiment
+      // Update the entry with sentiment, score, and tags
       add(JournalSentimentUpdateRequested(
         id: entryId,
-        sentimentLabel: sentiment.name,
+        sentimentLabel: (sentimentData['sentiment'] as SentimentLabel).name,
+        sentimentScore: sentimentData['score'] as double,
+        sentimentTags: sentimentData['tags'] as List<String>,
       ));
     } catch (e) {
       // Silent fail - entry will show "Analyzing..." state
@@ -127,6 +130,8 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
       await _journalRepository.updateJournalEntry(
         id: event.id,
         sentimentLabel: event.sentimentLabel,
+        sentimentScore: event.sentimentScore,
+        sentimentTags: event.sentimentTags,
       );
       
       add(const JournalRefreshRequested());

@@ -129,68 +129,41 @@ class _NewEntryPageState extends State<NewEntryPage> {
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppTheme.darkCard,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Sentiment Analysis',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.darkCard,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.brightBlue.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.auto_awesome,
+                              color: AppTheme.brightBlue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'AI will analyze your emotions after saving',
+                                style: TextStyle(
+                                  color: AppTheme.darkText,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Overall Mood: Mostly Positive',
-                            style: TextStyle(
-                              color: AppTheme.darkText,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const Text(
-                            '8.5/10',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: 0.85,
-                          minHeight: 8,
-                          backgroundColor: AppTheme.darkBackground,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppTheme.mintGreen,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _buildSentimentChip('Gratitude'),
-                          _buildSentimentChip('Excitement'),
-                          _buildSentimentChip('Optimism'),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
                       SizedBox(
                         height: 56,
                         child: ElevatedButton(
@@ -246,24 +219,6 @@ class _NewEntryPageState extends State<NewEntryPage> {
             label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSentimentChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E3A8A),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Color(0xFF60A5FA),
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -29,18 +30,18 @@ class _LoginPageState extends State<LoginPage> {
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-            AuthSignInRequested(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+        AuthSignInRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: AppTheme.darkBackground,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
@@ -65,37 +66,29 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const SizedBox(height: 80),
                     Center(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: AppTheme.softBlue.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Icon(
-                          Icons.psychology_outlined,
-                          size: 60,
-                          color: AppTheme.softBlue,
-                        ),
+                      child: Image.asset(
+                        "assets/images/logo-sentimo-nobg.png",
+                        width: 220,
+                        fit: BoxFit.cover,
                       ),
                     ),
                     const SizedBox(height: 32),
                     Text(
                       'Welcome Back',
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.darkGray,
+                        color: AppTheme.white,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 24),
                     Text(
                       'Email',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.darkGray,
+                        color: AppTheme.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -110,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 16,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppTheme.background,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -121,7 +114,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.softBlue, width: 1.5),
+                          borderSide: BorderSide(
+                            color: AppTheme.softBlue,
+                            width: 1.5,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -145,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.darkGray,
+                        color: AppTheme.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -160,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 16,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppTheme.background,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -171,7 +167,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.softBlue, width: 1.5),
+                          borderSide: BorderSide(
+                            color: AppTheme.softBlue,
+                            width: 1.5,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -215,10 +214,8 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           'Forgot Password?',
                           style: TextStyle(
-                            color: Colors.grey.shade500,
+                            color: Colors.grey.shade300,
                             fontSize: 14,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.grey.shade500,
                           ),
                         ),
                       ),
@@ -229,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.softBlue,
+                          backgroundColor: AppTheme.blue,
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -284,19 +281,17 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        icon: Container(
-                          width: 24,
+                        icon: Image.asset(
+                          "assets/icons/ic-google.png",
                           height: 24,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade800,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                          width: 24,
                         ),
                         label: Text(
                           'Google',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
+                            color: AppTheme.white,
                           ),
                         ),
                       ),
@@ -320,7 +315,7 @@ class _LoginPageState extends State<LoginPage> {
                           text: TextSpan(
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade300,
                             ),
                             children: [
                               TextSpan(text: 'Don\'t have an account? '),

@@ -56,8 +56,7 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Sentimo',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          theme: AppTheme.theme,
           themeMode: ThemeMode.dark,
           home: const SplashScreen(),
         ),
@@ -136,10 +135,8 @@ class AuthWrapper extends StatelessWidget {
           return const LoginPage();
         }
         return Scaffold(
-          backgroundColor: AppTheme.offWhite,
-          body: Center(
-            child: CircularProgressIndicator(color: AppTheme.softBlue),
-          ),
+          backgroundColor: AppTheme.background,
+          body: Center(child: CircularProgressIndicator(color: AppTheme.blue)),
         );
       },
     );

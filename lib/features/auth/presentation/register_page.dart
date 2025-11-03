@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -31,18 +32,18 @@ class _RegisterPageState extends State<RegisterPage> {
   void _handleRegister() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-            AuthSignUpRequested(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+        AuthSignUpRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -82,37 +83,29 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     const SizedBox(height: 40),
                     Center(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: AppTheme.mintGreen.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Icon(
-                          Icons.person_add_rounded,
-                          size: 60,
-                          color: AppTheme.mintGreen,
-                        ),
+                      child: Image.asset(
+                        "assets/images/logo-sentimo-nobg.png",
+                        width: 220,
+                        fit: BoxFit.cover,
                       ),
                     ),
                     const SizedBox(height: 32),
                     Text(
                       'Create Account',
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.darkGray,
+                        color: AppTheme.white,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 24),
                     Text(
                       'Email',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.darkGray,
+                        color: AppTheme.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -127,7 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           fontSize: 16,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppTheme.background,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -138,7 +131,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.mintGreen, width: 1.5),
+                          borderSide: BorderSide(
+                            color: AppTheme.softBlue,
+                            width: 1.5,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -162,7 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.darkGray,
+                        color: AppTheme.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -177,7 +173,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           fontSize: 16,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppTheme.background,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -188,7 +184,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.mintGreen, width: 1.5),
+                          borderSide: BorderSide(
+                            color: AppTheme.softBlue,
+                            width: 1.5,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -225,7 +224,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.darkGray,
+                        color: AppTheme.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -240,7 +239,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           fontSize: 16,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppTheme.background,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -251,7 +250,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.mintGreen, width: 1.5),
+                          borderSide: BorderSide(
+                            color: AppTheme.softBlue,
+                            width: 1.5,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -266,7 +268,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureConfirmPassword = !_obscureConfirmPassword;
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
                             });
                           },
                         ),
@@ -288,7 +291,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _handleRegister,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.mintGreen,
+                          backgroundColor: AppTheme.blue,
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -325,14 +328,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           text: TextSpan(
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade300,
                             ),
                             children: [
                               TextSpan(text: 'Already have an account? '),
                               TextSpan(
                                 text: 'Sign In',
                                 style: TextStyle(
-                                  color: AppTheme.softBlue,
+                                  color: AppTheme.blue,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

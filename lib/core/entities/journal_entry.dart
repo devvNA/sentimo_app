@@ -38,6 +38,8 @@ class JournalEntry extends Equatable {
   final String userId;
   final String content;
   final SentimentLabel? sentimentLabel;
+  final double? sentimentScore;
+  final List<String>? sentimentTags;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -46,6 +48,8 @@ class JournalEntry extends Equatable {
     required this.userId,
     required this.content,
     this.sentimentLabel,
+    this.sentimentScore,
+    this.sentimentTags,
     required this.createdAt,
     this.updatedAt,
   });
@@ -57,6 +61,12 @@ class JournalEntry extends Equatable {
       content: json['content'] as String,
       sentimentLabel: json['sentiment_label'] != null
           ? SentimentLabel.fromString(json['sentiment_label'] as String)
+          : null,
+      sentimentScore: json['sentiment_score'] != null
+          ? (json['sentiment_score'] as num).toDouble()
+          : null,
+      sentimentTags: json['sentiment_tags'] != null
+          ? List<String>.from(json['sentiment_tags'] as List)
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
@@ -71,6 +81,8 @@ class JournalEntry extends Equatable {
       'user_id': userId,
       'content': content,
       'sentiment_label': sentimentLabel?.name,
+      'sentiment_score': sentimentScore,
+      'sentiment_tags': sentimentTags,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -81,6 +93,8 @@ class JournalEntry extends Equatable {
     String? userId,
     String? content,
     SentimentLabel? sentimentLabel,
+    double? sentimentScore,
+    List<String>? sentimentTags,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -89,11 +103,13 @@ class JournalEntry extends Equatable {
       userId: userId ?? this.userId,
       content: content ?? this.content,
       sentimentLabel: sentimentLabel ?? this.sentimentLabel,
+      sentimentScore: sentimentScore ?? this.sentimentScore,
+      sentimentTags: sentimentTags ?? this.sentimentTags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
   @override
-  List<Object?> get props => [id, userId, content, sentimentLabel, createdAt, updatedAt];
+  List<Object?> get props => [id, userId, content, sentimentLabel, sentimentScore, sentimentTags, createdAt, updatedAt];
 }

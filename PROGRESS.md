@@ -737,6 +737,59 @@ CustomPaint(
 
 ---
 
+### Re-Analyze Sentiment Capability ✅
+**Status:** Completed  
+**Time:** 22:30 - 23:00  
+**Agent:** AI Assistant
+
+**Completed:**
+- ✅ Analyze button now always visible
+- ✅ Dynamic button text: "Analyze Sentiment" → "Re-analyze Sentiment"
+- ✅ Users can re-analyze multiple times before saving
+- ✅ Results displayed in bordered container below button
+- ✅ Loading state improved with inline design
+- ✅ Clear visual separation between analyze and save actions
+
+**Key Changes:**
+- Button logic: `if (!_isAnalyzing)` instead of `if (_analyzedSentiment == null && !_isAnalyzing)`
+- Dynamic label based on `_analyzedSentiment` state
+- Results wrapped in Container with colored border
+- Loading state shown in button-style container
+- Results container has sentiment-colored border
+
+**User Experience Improvements:**
+```
+1. User writes entry
+2. Click "Analyze Sentiment" → See results
+3. Edit text if needed
+4. Click "Re-analyze Sentiment" → See updated results
+5. Repeat until satisfied
+6. Click "Save Entry"
+```
+
+**Benefits:**
+- More control over sentiment accuracy
+- Can refine text based on analysis
+- No need to start over if result unexpected
+- Clear workflow: analyze → review → refine → save
+
+**Files Modified:**
+- `lib/features/journal/presentation/new_entry_page.dart` - Re-analyze capability
+
+**Verification:**
+- ✅ `flutter analyze` - No issues found
+- ✅ Button always visible after first analysis
+- ✅ Text updates correctly
+- ✅ Multiple re-analyses work smoothly
+
+**Notes:**
+- Improved UX with iterative refinement capability
+- Clear visual feedback at each stage
+- Maintains all original functionality
+- Better user control over final sentiment
+
+---
+
 ## Pending Tasks
 
 ### Immediate Next Steps (From TASKS.md)
@@ -816,7 +869,7 @@ None currently.
 
 ## Statistics
 
-**Total Commits:** 14
+**Total Commits:** 16
 **Files Created:** 38
 **Lines of Code:** ~3800+
 **Documentation Lines:** ~1350+

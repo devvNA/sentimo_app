@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/theme/app_theme.dart';
+import '../../../data/repositories/auth_repository.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
-import '../../journal/presentation/new_entry_page.dart';
 import '../../home/presentation/home_page.dart';
-import '../../../data/repositories/auth_repository.dart';
+import '../../journal/presentation/new_entry_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -41,9 +42,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final username = email.split('@').first;
     final parts = username.split('.');
     return parts
-        .map((part) => part.isNotEmpty
-            ? '${part[0].toUpperCase()}${part.substring(1)}'
-            : '')
+        .map(
+          (part) => part.isNotEmpty
+              ? '${part[0].toUpperCase()}${part.substring(1)}'
+              : '',
+        )
         .join(' ');
   }
 
@@ -51,17 +54,13 @@ class _ProfilePageState extends State<ProfilePage> {
     if (index == _selectedIndex) return;
 
     if (index == 0) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const HomePage(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
     } else if (index == 1) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const NewEntryPage(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const NewEntryPage()));
     }
   }
 
@@ -70,10 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppTheme.darkCard,
-        title: const Text(
-          'Log Out',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Log Out', style: TextStyle(color: Colors.white)),
         content: const Text(
           'Are you sure you want to log out?',
           style: TextStyle(color: Color(0xFF9CA3AF)),
@@ -91,10 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.of(dialogContext).pop();
               context.read<AuthBloc>().add(const AuthSignOutRequested());
             },
-            child: const Text(
-              'Log Out',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -132,29 +125,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.person,
-                        size: 40,
-                        color: Colors.grey[400],
-                      ),
+                      Icon(Icons.person, size: 40, color: Colors.grey[400]),
                       const SizedBox(height: 8),
-                      Container(
-                        width: 50,
-                        height: 2,
-                        color: Colors.grey[300],
-                      ),
+                      Container(width: 50, height: 2, color: Colors.grey[300]),
                       const SizedBox(height: 4),
-                      Container(
-                        width: 50,
-                        height: 2,
-                        color: Colors.grey[300],
-                      ),
+                      Container(width: 50, height: 2, color: Colors.grey[300]),
                       const SizedBox(height: 4),
-                      Container(
-                        width: 50,
-                        height: 2,
-                        color: Colors.grey[300],
-                      ),
+                      Container(width: 50, height: 2, color: Colors.grey[300]),
                     ],
                   ),
                 ),
@@ -172,10 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 8),
             Text(
               _userEmail ?? '',
-              style: TextStyle(
-                color: AppTheme.darkTextSecondary,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: AppTheme.darkTextSecondary, fontSize: 16),
             ),
             const SizedBox(height: 48),
             _buildMenuItem(
@@ -187,21 +161,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Account Settings - Coming Soon'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildMenuItem(
-              icon: Icons.notifications_outlined,
-              iconColor: AppTheme.brightBlue,
-              title: 'Notifications',
-              onTap: () {
-                // TODO: Navigate to notifications
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Notifications - Coming Soon'),
                     duration: Duration(seconds: 1),
                   ),
                 );
@@ -285,10 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         leading: Container(
           width: 56,
           height: 56,
@@ -296,11 +252,7 @@ class _ProfilePageState extends State<ProfilePage> {
             color: iconBgColor ?? const Color(0xFF1E3A5F),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 28,
-          ),
+          child: Icon(icon, color: iconColor, size: 28),
         ),
         title: Text(
           title,
@@ -335,7 +287,9 @@ class _ProfilePageState extends State<ProfilePage> {
           Icon(
             icon,
             size: 28,
-            color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+            color: isSelected
+                ? AppTheme.brightBlue
+                : AppTheme.darkTextSecondary,
           ),
           const SizedBox(height: 4),
           Text(
@@ -343,7 +297,9 @@ class _ProfilePageState extends State<ProfilePage> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+              color: isSelected
+                  ? AppTheme.brightBlue
+                  : AppTheme.darkTextSecondary,
             ),
           ),
         ],

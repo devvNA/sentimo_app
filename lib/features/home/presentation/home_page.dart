@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/dashed_border_container.dart';
 import '../../../core/widgets/journal_entry_card.dart';
 import '../../journal/bloc/journal_bloc.dart';
 import '../../journal/bloc/journal_event.dart';
@@ -85,42 +86,48 @@ class _HomePageState extends State<HomePage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
-                child: Container(
-                  padding: const EdgeInsets.all(48),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppTheme.darkTextSecondary.withValues(alpha: 0.3),
-                      width: 2,
-                      strokeAlign: BorderSide.strokeAlignInside,
+                child: DashedBorderContainer(
+                  color: AppTheme.darkTextSecondary.withValues(alpha: 0.4),
+                  strokeWidth: 2.0,
+                  dashWidth: 10.0,
+                  dashSpace: 6.0,
+                  borderRadius: 20.0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 60,
                     ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.book_outlined,
-                        size: 64,
-                        color: AppTheme.darkTextSecondary,
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Your Journal is Empty',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.book_outlined,
+                          size: 72,
+                          color: AppTheme.darkTextSecondary.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Tap the \'+\' button to write your first entry\nand start your journey of reflection.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.darkTextSecondary,
+                        const SizedBox(height: 32),
+                        Text(
+                          'Your Journal is Empty',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'Tap the \'+\' button to write your first entry\nand start your journey of reflection.',
+                          style: TextStyle(
+                            color: AppTheme.darkTextSecondary,
+                            fontSize: 15,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -214,7 +221,9 @@ class _HomePageState extends State<HomePage> {
           Icon(
             icon,
             size: 28,
-            color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+            color: isSelected
+                ? AppTheme.brightBlue
+                : AppTheme.darkTextSecondary,
           ),
           const SizedBox(height: 4),
           Text(
@@ -222,7 +231,9 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+              color: isSelected
+                  ? AppTheme.brightBlue
+                  : AppTheme.darkTextSecondary,
             ),
           ),
         ],

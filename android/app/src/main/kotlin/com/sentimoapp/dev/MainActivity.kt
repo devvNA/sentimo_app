@@ -1,4 +1,4 @@
-package com.example.sentimo
+package com.sentimoapp.dev
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -45,6 +45,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _handleGoogleSignIn() {
+    log('🔵 [LoginPage] Google Sign In button pressed');
+    context.read<AuthBloc>().add(const AuthGoogleSignInRequested());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -321,7 +326,7 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(
                       height: 56,
                       child: OutlinedButton.icon(
-                        onPressed: isLoading ? null : () {},
+                        onPressed: isLoading ? null : _handleGoogleSignIn,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.darkGray,
                           side: BorderSide(color: Colors.grey.shade300),
@@ -335,7 +340,7 @@ class _LoginPageState extends State<LoginPage> {
                           width: 24,
                         ),
                         label: Text(
-                          'Google',
+                          'Continue with Google',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,

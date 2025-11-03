@@ -68,4 +68,24 @@ class AuthRepository {
       rethrow;
     }
   }
+
+  Future<bool> signInWithGoogle() async {
+    try {
+      log('🔵 [AuthRepository] Starting Google Sign In...');
+
+      final result = await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.flutterquickstart://login-callback/',
+      );
+
+      log('✅ [AuthRepository] Google Sign In initiated: $result');
+      return result;
+    } on AuthException catch (e) {
+      log('❌ [AuthRepository] Google Sign In error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      log('❌ [AuthRepository] Google Sign In unexpected error: $e');
+      rethrow;
+    }
+  }
 }

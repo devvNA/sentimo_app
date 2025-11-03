@@ -13,6 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignUpRequested>(_onAuthSignUpRequested);
     on<AuthSignInRequested>(_onAuthSignInRequested);
     on<AuthSignOutRequested>(_onAuthSignOutRequested);
+    on<AuthGoogleSignInRequested>(_onAuthGoogleSignInRequested);
   }
 
   Future<void> _onAuthCheckRequested(
@@ -97,6 +98,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+  Future<void> _onAuthGoogleSignInRequested(
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    log('🔵 [AuthBloc] Google Sign In requested');
+    emit(const AuthLoading());
+    try {
+      final result = await _authRepository.signInWithGoogle();
+      
+      if (result) {
+        log('✅ [AuthBloc] Google Sign In flow initiated successfully');
+        // OAuth will handle the actual authentication via callback
+        // The auth state will change when user completes Google Sign In
+      } else {
+        log('❌ [AuthBloc] Google Sign In flow failed to initiate');
+        emit(const AuthError('Failed to initiate Google Sign In'));
+      }
+    } catch (e) {
+      log('❌ [AuthBloc] Google Sign In error: $e');
+      emit(AuthError(_parseError(e.toString())));
+    }
+  }
+
   String _parseError(String error) {
     if (error.contains('Invalid login credentials')) {
       return 'Invalid email or password';
@@ -104,6 +128,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       return 'Please verify your email first';
     } else if (error.contains('User already registered')) {
       return 'Email already in use';
+    } else if (error.contains('OAuth') || error.contains('google')) {
+      return 'Google Sign In failed. Please try again.';
     }
     return 'An error occurred. Please try again.';
   }

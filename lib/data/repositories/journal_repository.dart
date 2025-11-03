@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../core/entities/journal_entry.dart';
 
 class JournalRepository {
@@ -6,7 +9,10 @@ class JournalRepository {
 
   JournalRepository(this._supabase);
 
-  Future<List<JournalEntry>> getJournalEntries({int limit = 20, int offset = 0}) async {
+  Future<List<JournalEntry>> getJournalEntries({
+    int limit = 20,
+    int offset = 0,
+  }) async {
     try {
       final response = await _supabase
           .from('journal_entries')
@@ -17,7 +23,11 @@ class JournalRepository {
       return (response as List)
           .map((json) => JournalEntry.fromJson(json))
           .toList();
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }
@@ -31,7 +41,11 @@ class JournalRepository {
           .single();
 
       return JournalEntry.fromJson(response);
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }
@@ -57,7 +71,11 @@ class JournalRepository {
           .single();
 
       return JournalEntry.fromJson(response);
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }
@@ -88,18 +106,23 @@ class JournalRepository {
           .single();
 
       return JournalEntry.fromJson(response);
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }
 
   Future<void> deleteJournalEntry(String id) async {
     try {
-      await _supabase
-          .from('journal_entries')
-          .delete()
-          .eq('id', id);
+      await _supabase.from('journal_entries').delete().eq('id', id);
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }
@@ -109,6 +132,8 @@ class JournalRepository {
         .from('journal_entries')
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
-        .map((data) => data.map((json) => JournalEntry.fromJson(json)).toList());
+        .map(
+          (data) => data.map((json) => JournalEntry.fromJson(json)).toList(),
+        );
   }
 }

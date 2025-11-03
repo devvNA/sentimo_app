@@ -13,6 +13,7 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     on<JournalLoadRequested>(_onJournalLoadRequested);
     on<JournalRefreshRequested>(_onJournalRefreshRequested);
     on<JournalCreateRequested>(_onJournalCreateRequested);
+    on<JournalCreateRequestedWithSentiment>(_onJournalCreateRequestedWithSentiment);
     on<JournalUpdateRequested>(_onJournalUpdateRequested);
     on<JournalDeleteRequested>(_onJournalDeleteRequested);
     on<JournalSentimentUpdateRequested>(_onJournalSentimentUpdateRequested);
@@ -70,6 +71,36 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
       _analyzeSentimentAsync(entry.id, event.content);
       
       // Step 3: Refresh to show the new entry
+      add(const JournalRefreshRequested());
+    } catch (e) {
+      emit(JournalError(_parseError(e.toString())));
+    }
+  }
+
+  Future<void> _onJournalCreateRequestedWithSentiment(
+    JournalCreateRequestedWithSentiment event,
+    Emitter<JournalState> emit,
+  ) async {
+    emit(const JournalCreating());
+    try {
+      // Create the journal entry WITH sentiment data
+      final entry = await _journalRepository.createJournalEntry(
+        content: event.content,
+        sentimentLabel: event.sentimentLabel,
+      );
+      
+      // If we have sentiment score and tags, update them
+      if (event.sentimentScore != null || event.sentimentTags != null) {
+        await _journalRepository.updateJournalEntry(
+          id: entry.id,
+          sentimentScore: event.sentimentScore,
+          sentimentTags: event.sentimentTags,
+        );
+      }
+      
+      emit(JournalCreated(entry));
+      
+      // Refresh to show the new entry
       add(const JournalRefreshRequested());
     } catch (e) {
       emit(JournalError(_parseError(e.toString())));

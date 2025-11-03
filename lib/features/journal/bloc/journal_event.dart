@@ -24,6 +24,23 @@ class JournalCreateRequested extends JournalEvent {
   List<Object?> get props => [content];
 }
 
+class JournalCreateRequestedWithSentiment extends JournalEvent {
+  final String content;
+  final String? sentimentLabel;
+  final double? sentimentScore;
+  final List<String>? sentimentTags;
+
+  const JournalCreateRequestedWithSentiment({
+    required this.content,
+    this.sentimentLabel,
+    this.sentimentScore,
+    this.sentimentTags,
+  });
+
+  @override
+  List<Object?> get props => [content, sentimentLabel, sentimentScore, sentimentTags];
+}
+
 class JournalUpdateRequested extends JournalEvent {
   final String id;
   final String content;

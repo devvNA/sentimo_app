@@ -535,6 +535,78 @@ ALTER TABLE journal_entries
 
 ---
 
+### Sentiment Analysis Flow Redesign ✅
+**Status:** Completed  
+**Time:** 21:00 - 21:30  
+**Agent:** AI Assistant
+
+**Completed:**
+- ✅ **BREAKING CHANGE:** Redesigned sentiment analysis flow - now manual, not automatic
+- ✅ Updated NewEntryPage with before/after analysis states:
+  - **BEFORE Analysis:** Shows "Analyze Sentiment" button (outlined blue with sparkle icon)
+  - **DURING Analysis:** Shows loading spinner with "Analyzing your emotions..." text
+  - **AFTER Analysis:** Shows mood label, score (0-10), progress bar, emotion tags chips
+- ✅ Moved sentiment analysis logic to UI layer:
+  - SentimentService called directly from NewEntryPage
+  - State managed locally in page (not in BLoC background)
+  - Analysis triggered by user button click
+- ✅ Created new event JournalCreateRequestedWithSentiment:
+  - Accepts content + sentiment data (label, score, tags)
+  - Saves entry with all sentiment information at once
+- ✅ Added handler _onJournalCreateRequestedWithSentiment in JournalBloc:
+  - Creates entry with sentiment label
+  - Updates score and tags if available
+  - No background processing
+- ✅ UI matches design mockups exactly:
+  - new_entry_page-before.png (analyze button state)
+  - new_entry_page-after.png (results display state)
+
+**New Flow:**
+```
+User writes entry
+    ↓
+Click "Analyze Sentiment" button
+    ↓
+Loading state (spinner)
+    ↓
+Display results:
+    - Overall Mood: Mostly Positive
+    - Score: 8.5/10
+    - Progress bar (colored by sentiment)
+    - Tags: Gratitude, Excitement, Optimism
+    ↓
+Click "Save Entry" button
+    ↓
+Save to database with sentiment data
+```
+
+**Files Modified:**
+- `lib/features/journal/presentation/new_entry_page.dart` - Complete redesign with manual analysis
+- `lib/features/journal/bloc/journal_event.dart` - Added JournalCreateRequestedWithSentiment event
+- `lib/features/journal/bloc/journal_bloc.dart` - Added handler for new event
+
+**Verification:**
+- ✅ `flutter analyze` - No issues found
+- ✅ Analysis only happens when user clicks button
+- ✅ Results displayed before save
+- ✅ Clean separation of concerns
+
+**Benefits:**
+- User control over when AI analysis happens
+- See analysis results before saving
+- Can edit entry if sentiment doesn't match expectations
+- More predictable UX - no background surprises
+- Follows design specifications exactly
+
+**Notes:**
+- Background analysis removed from old flow
+- User MUST click "Analyze Sentiment" to get sentiment data
+- Can save without analyzing (sentiment will be null)
+- Loading states clearly communicated
+- Error handling with user-friendly messages
+
+---
+
 ## Pending Tasks
 
 ### Immediate Next Steps (From TASKS.md)
@@ -614,7 +686,7 @@ None currently.
 
 ## Statistics
 
-**Total Commits:** 8
+**Total Commits:** 10
 **Files Created:** 37
 **Lines of Code:** ~3800+
 **Documentation Lines:** ~1350+

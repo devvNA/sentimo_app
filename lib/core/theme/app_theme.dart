@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color background = Color(0xFF1F2937);
+  static const Color background = Color.fromARGB(255, 22, 29, 39);
   static const Color blue = Color(0xFF2B8CEE);
   static const Color softBlue = Color(0xFF6BA5CF);
   static const Color mintGreen = Color(0xFF91C2A9);
@@ -40,7 +40,7 @@ class AppTheme {
         fontWeight: FontWeight.bold,
       ),
     ),
-    textTheme: GoogleFonts.poppinsTextTheme(
+    textTheme: GoogleFonts.interTextTheme(
       TextTheme(
         displayLarge: TextStyle(
           fontSize: 32,

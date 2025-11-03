@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sentimo/features/auth/bloc/auth_event.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env_config.dart';
@@ -8,7 +9,6 @@ import 'data/repositories/auth_repository.dart';
 import 'data/repositories/journal_repository.dart';
 import 'data/services/sentiment_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
-import 'features/auth/bloc/auth_event.dart';
 import 'features/auth/bloc/auth_state.dart' as auth_state;
 import 'features/auth/presentation/login_page.dart';
 import 'features/home/presentation/home_page.dart';
@@ -94,26 +94,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: AppTheme.darkBackground,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.book_rounded, size: 80, color: AppTheme.softBlue),
-            const SizedBox(height: 24),
-            Text(
-              'Sentimo',
-              style: Theme.of(
-                context,
-              ).textTheme.displayMedium?.copyWith(color: AppTheme.softBlue),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Your AI Sentiment Journal',
-              style: Theme.of(context).textTheme.bodyMedium,
+            Image.asset(
+              "assets/images/logo-sentimo-nobg.png",
+              width: 250.0,
+              fit: BoxFit.cover,
             ),
             const SizedBox(height: 48),
-            CircularProgressIndicator(color: AppTheme.softBlue),
+            CircularProgressIndicator(color: AppTheme.offWhite),
           ],
         ),
       ),

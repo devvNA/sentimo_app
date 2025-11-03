@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../features/journal/bloc/journal_bloc.dart';
-import '../../features/journal/presentation/entry_detail_page.dart';
 import '../entities/journal_entry.dart';
 import '../theme/app_theme.dart';
 
@@ -47,6 +46,7 @@ class JournalEntryCard extends StatelessWidget {
     final timeFormat = DateFormat('hh:mm a');
 
     return Card(
+      color: Color(0xFF17212F),
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap:
@@ -54,10 +54,8 @@ class JournalEntryCard extends StatelessWidget {
             () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<JournalBloc>(),
-                    child: EntryDetailPage(entry: entry),
-                  ),
+                  builder: (_) =>
+                      BlocProvider.value(value: context.read<JournalBloc>()),
                 ),
               );
             },

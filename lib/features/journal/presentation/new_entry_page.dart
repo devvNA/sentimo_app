@@ -12,7 +12,7 @@ import '../bloc/journal_state.dart';
 
 class NewEntryPage extends StatefulWidget {
   final JournalEntry? entry; // Optional - for edit mode
-  
+
   const NewEntryPage({super.key, this.entry});
 
   @override
@@ -38,7 +38,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
     // Pre-populate data if editing
     if (_isEditMode) {
       _contentController.text = widget.entry!.content;
-      
+
       // Load existing sentiment data
       _analyzedSentiment = widget.entry!.sentimentLabel;
       _analyzedScore = widget.entry!.sentimentScore;
@@ -98,7 +98,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
     }
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (_formKey.currentState!.validate()) {
       if (_isEditMode) {
         // Update existing entry
@@ -108,7 +108,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
             content: _contentController.text.trim(),
           ),
         );
-        
+
         // Update sentiment if analyzed
         if (_analyzedSentiment != null) {
           context.read<JournalBloc>().add(
@@ -117,6 +117,20 @@ class _NewEntryPageState extends State<NewEntryPage> {
               sentimentLabel: _analyzedSentiment!.name,
               sentimentScore: _analyzedScore,
               sentimentTags: _analyzedTags,
+            ),
+          );
+        }
+        
+        // Wait a bit for the update to process
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Entry updated successfully!'),
+              backgroundColor: AppTheme.brightBlue,
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -154,9 +168,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -164,9 +176,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
     );
 
     if (confirm == true && mounted) {
-      context.read<JournalBloc>().add(
-        JournalDeleteRequested(widget.entry!.id),
-      );
+      context.read<JournalBloc>().add(JournalDeleteRequested(widget.entry!.id));
       Navigator.of(context).pop();
     }
   }
@@ -222,7 +232,10 @@ class _NewEntryPageState extends State<NewEntryPage> {
           icon: const Icon(Icons.close, size: 28),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(_isEditMode ? 'Edit Entry' : today),
+        title: Text(
+          _isEditMode ? 'Edit Entry' : today,
+          style: TextStyle(fontSize: 20),
+        ),
         centerTitle: true,
       ),
       body: BlocConsumer<JournalBloc, JournalState>(
@@ -488,42 +501,27 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                   // Delete button
                                   SizedBox(
                                     height: 56,
-                                    width: 72,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1E293B),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: IconButton(
-                                        onPressed: (isSaving || _isAnalyzing)
-                                            ? null
-                                            : _handleDelete,
-                                        icon: const Icon(
-                                          Icons.delete_outline,
-                                          color: Colors.white,
-                                          size: 28,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFFC82216),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16.0,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  // Edit Icon button (disabled/visual only)
-                                  SizedBox(
-                                    height: 56,
-                                    width: 72,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1E293B),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
+                                      onPressed: (isSaving || _isAnalyzing)
+                                          ? null
+                                          : _handleDelete,
                                       child: const Icon(
-                                        Icons.edit_outlined,
-                                        color: Colors.white,
-                                        size: 28,
+                                        Icons.delete_forever,
+                                        size: 28.0,
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
+
                                   // Update button
                                   Expanded(
                                     child: SizedBox(
@@ -537,8 +535,9 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                           foregroundColor: Colors.white,
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16),
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
                                           ),
                                         ),
                                         child: isSaving
@@ -547,9 +546,9 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                                 width: 24,
                                                 child:
                                                     CircularProgressIndicator(
-                                                  strokeWidth: 2.5,
-                                                  color: Colors.white,
-                                                ),
+                                                      strokeWidth: 2.5,
+                                                      color: Colors.white,
+                                                    ),
                                               )
                                             : const Row(
                                                 mainAxisAlignment:
@@ -601,7 +600,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                       : const Text(
                                           'Save Entry',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),

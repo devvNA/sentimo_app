@@ -6,6 +6,7 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../home/presentation/home_page.dart';
+import '../../journal/bloc/journal_bloc.dart';
 import '../../journal/presentation/new_entry_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -54,13 +55,25 @@ class _ProfilePageState extends State<ProfilePage> {
     if (index == _selectedIndex) return;
 
     if (index == 0) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      // Navigate to HomePage (replace)
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: context.read<JournalBloc>(),
+            child: const HomePage(),
+          ),
+        ),
+      );
     } else if (index == 1) {
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const NewEntryPage()));
+      // Push NewEntryPage as modal
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: context.read<JournalBloc>(),
+            child: const NewEntryPage(),
+          ),
+        ),
+      );
     }
   }
 

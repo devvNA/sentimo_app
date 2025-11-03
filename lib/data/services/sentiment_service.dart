@@ -50,49 +50,49 @@ Do not include any explanation or additional text.
     }
   }
 
-  Future<String> analyzeSentimentWithExplanation(String text) async {
-    try {
-      final prompt =
-          '''
-Analyze the sentiment of the following journal entry and provide:
-1. Classification: positive, negative, neutral, or mixed
-2. Brief explanation (1-2 sentences) about the emotional tone
+  //   Future<String> analyzeSentimentWithExplanation(String text) async {
+  //     try {
+  //       final prompt =
+  //           '''
+  // Analyze the sentiment of the following journal entry and provide:
+  // 1. Classification: positive, negative, neutral, or mixed
+  // 2. Brief explanation (1-2 sentences) about the emotional tone
 
-Journal entry:
-"$text"
+  // Journal entry:
+  // "$text"
 
-Format your response as:
-Sentiment: [classification]
-Explanation: [brief explanation]
-''';
+  // Format your response as:
+  // Sentiment: [classification]
+  // Explanation: [brief explanation]
+  // ''';
 
-      final content = [Content.text(prompt)];
-      final response = await _model.generateContent(content);
+  //       final content = [Content.text(prompt)];
+  //       final response = await _model.generateContent(content);
 
-      return response.text ?? 'Unable to analyze sentiment';
-    } catch (e) {
-      return 'Error analyzing sentiment: ${e.toString()}';
-    }
-  }
+  //       return response.text ?? 'Unable to analyze sentiment';
+  //     } catch (e) {
+  //       return 'Error analyzing sentiment: ${e.toString()}';
+  //     }
+  //   }
 
-  Future<Map<String, dynamic>> analyzeSentimentDetailed(String text) async {
-    try {
-      final sentiment = await analyzeSentiment(text);
+  // Future<Map<String, dynamic>> analyzeSentimentDetailed(String text) async {
+  //   try {
+  //     final sentiment = await analyzeSentiment(text);
 
-      return {
-        'sentiment': sentiment.name,
-        'label': sentiment.toDisplayString(),
-        'timestamp': DateTime.now().toIso8601String(),
-      };
-    } catch (e) {
-      return {
-        'sentiment': 'neutral',
-        'label': 'Neutral',
-        'error': e.toString(),
-        'timestamp': DateTime.now().toIso8601String(),
-      };
-    }
-  }
+  //     return {
+  //       'sentiment': sentiment.name,
+  //       'label': sentiment.toDisplayString(),
+  //       'timestamp': DateTime.now().toIso8601String(),
+  //     };
+  //   } catch (e) {
+  //     return {
+  //       'sentiment': 'neutral',
+  //       'label': 'Neutral',
+  //       'error': e.toString(),
+  //       'timestamp': DateTime.now().toIso8601String(),
+  //     };
+  //   }
+  // }
 
   Future<Map<String, dynamic>> analyzeSentimentComplete(String text) async {
     try {

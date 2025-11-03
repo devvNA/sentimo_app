@@ -34,6 +34,7 @@ class _HomePageState extends State<HomePage> {
     if (index == _selectedIndex) return;
 
     if (index == 1) {
+      // Push NewEntryPage as modal
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => BlocProvider.value(
@@ -43,13 +44,15 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     } else if (index == 2) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const ProfilePage()));
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
+      // Navigate to ProfilePage (replace)
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: context.read<JournalBloc>(),
+            child: const ProfilePage(),
+          ),
+        ),
+      );
     }
   }
 

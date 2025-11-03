@@ -234,23 +234,39 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_outlined),
-            label: 'Home',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.darkCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  icon: Icons.book_outlined,
+                  label: 'Journal',
+                  index: 0,
+                  isSelected: _selectedIndex == 0,
+                ),
+                _buildNavItem(
+                  icon: Icons.add_circle_outline,
+                  label: 'New Entry',
+                  index: 1,
+                  isSelected: _selectedIndex == 1,
+                ),
+                _buildNavItem(
+                  icon: Icons.person_outline,
+                  label: 'Profile',
+                  index: 2,
+                  isSelected: _selectedIndex == 2,
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: 'New Entry',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -300,6 +316,37 @@ class _ProfilePageState extends State<ProfilePage> {
           size: 28,
         ),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () => _onNavTapped(index),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 28,
+            color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

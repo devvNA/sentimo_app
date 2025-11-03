@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/journal_entry_card.dart';
 import '../../journal/bloc/journal_bloc.dart';
 import '../../journal/bloc/journal_event.dart';
 import '../../journal/bloc/journal_state.dart';
 import '../../journal/presentation/new_entry_page.dart';
-import '../../auth/bloc/auth_bloc.dart';
-import '../../auth/bloc/auth_event.dart';
 import '../../profile/presentation/profile_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -43,11 +42,9 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     } else if (index == 2) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const ProfilePage(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const ProfilePage()));
     } else {
       setState(() {
         _selectedIndex = index;
@@ -58,18 +55,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your Journal'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () {
-              context.read<AuthBloc>().add(const AuthSignOutRequested());
-            },
-            tooltip: 'Sign Out',
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Your Journal')),
       body: BlocConsumer<JournalBloc, JournalState>(
         listener: (context, state) {
           if (state is JournalError) {
@@ -91,9 +77,7 @@ class _HomePageState extends State<HomePage> {
         builder: (context, state) {
           if (state is JournalLoading) {
             return Center(
-              child: CircularProgressIndicator(
-                color: AppTheme.softBlue,
-              ),
+              child: CircularProgressIndicator(color: AppTheme.softBlue),
             );
           }
 
@@ -123,17 +107,17 @@ class _HomePageState extends State<HomePage> {
                       Text(
                         'Your Journal is Empty',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'Tap the \'+\' button to write your first entry\nand start your journey of reflection.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppTheme.darkTextSecondary,
-                            ),
+                          color: AppTheme.darkTextSecondary,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -148,14 +132,14 @@ class _HomePageState extends State<HomePage> {
               onRefresh: _onRefresh,
               color: AppTheme.brightBlue,
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 itemCount: state.entries.length,
                 itemBuilder: (context, index) {
                   final entry = state.entries[index];
-                  return JournalEntryCard(
-                    entry: entry,
-                    onTap: () {},
-                  );
+                  return JournalEntryCard(entry: entry, onTap: () {});
                 },
               ),
             );
@@ -178,21 +162,68 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: AppTheme.brightBlue,
         child: const Icon(Icons.add, size: 28),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'Home',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.darkCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  icon: Icons.book_outlined,
+                  label: 'Journal',
+                  index: 0,
+                  isSelected: _selectedIndex == 0,
+                ),
+                _buildNavItem(
+                  icon: Icons.add_circle_outline,
+                  label: 'New Entry',
+                  index: 1,
+                  isSelected: _selectedIndex == 1,
+                ),
+                _buildNavItem(
+                  icon: Icons.person_outline,
+                  label: 'Profile',
+                  index: 2,
+                  isSelected: _selectedIndex == 2,
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: 'New Entry',
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () => _onNavTapped(index),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 28,
+            color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+            ),
           ),
         ],
       ),

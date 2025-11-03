@@ -376,23 +376,39 @@ class _NewEntryPageState extends State<NewEntryPage> {
           );
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedNavIndex,
-        onTap: _onNavTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_outlined),
-            label: 'Journal',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.darkCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  icon: Icons.book_outlined,
+                  label: 'Journal',
+                  index: 0,
+                  isSelected: _selectedNavIndex == 0,
+                ),
+                _buildNavItem(
+                  icon: Icons.add_circle_outline,
+                  label: 'New Entry',
+                  index: 1,
+                  isSelected: _selectedNavIndex == 1,
+                ),
+                _buildNavItem(
+                  icon: Icons.person_outline,
+                  label: 'Profile',
+                  index: 2,
+                  isSelected: _selectedNavIndex == 2,
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: 'New Entry',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -411,6 +427,37 @@ class _NewEntryPageState extends State<NewEntryPage> {
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () => _onNavTapped(index),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 28,
+            color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

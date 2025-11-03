@@ -790,6 +790,86 @@ CustomPaint(
 
 ---
 
+### Edit and Delete Entry Functionality ✅
+**Status:** Completed  
+**Time:** 23:00 - 23:45  
+**Agent:** AI Assistant
+
+**Completed:**
+- ✅ NewEntryPage accepts optional JournalEntry parameter
+- ✅ Automatic mode detection (create vs edit)
+- ✅ Pre-populate form data when editing
+- ✅ Delete button with confirmation dialog
+- ✅ Update button with checkmark icon
+- ✅ Edit/Delete/Update button layout matching design
+- ✅ HomePage navigation passes entry data
+- ✅ All CRUD operations working
+
+**Key Changes:**
+- Added `entry` parameter to NewEntryPage constructor
+- Created `_isEditMode` getter to detect mode
+- Pre-populate form with entry content and sentiment data
+- Dynamic AppBar title: "Edit Entry" vs current date
+- Button layout changes based on mode:
+  * **Create mode**: Single "Save Entry" button
+  * **Edit mode**: 3 buttons (Delete + Edit Icon + Update)
+- Delete button triggers confirmation dialog
+- Update button with checkmark icon and "Update" text
+- HomePage passes entry when tapping JournalEntryCard
+
+**User Experience Flow:**
+```
+Create Mode:
+1. Tap "+" button → New Entry Page
+2. Write content
+3. Analyze sentiment (optional)
+4. Click "Save Entry"
+
+Edit Mode:
+1. Tap entry card → Edit Entry Page
+2. See existing content + sentiment
+3. Modify text if needed
+4. Re-analyze sentiment if needed
+5. Click "Update" → Saves changes
+   OR Click "Delete" → Shows confirmation → Deletes entry
+```
+
+**Button Layout (Edit Mode):**
+```
+┌──────────┬──────────┬────────────────────┐
+│ [Trash]  │ [Pencil] │  [✓] Update       │
+│  Delete  │   Edit   │   (Blue, Large)    │
+└──────────┴──────────┴────────────────────┘
+```
+
+**Technical Implementation:**
+- `_handleSave()` detects mode and calls appropriate BLoC event
+- `_handleDelete()` shows AlertDialog for confirmation
+- Edit icon is visual only (user already in edit mode)
+- Update triggers both content update and sentiment update
+- Navigation passes BLoC provider to maintain state
+
+**Files Modified:**
+- `lib/features/journal/presentation/new_entry_page.dart` - Edit/delete UI and logic
+- `lib/features/home/presentation/home_page.dart` - Pass entry data on navigation
+
+**Verification:**
+- ✅ `flutter analyze` - No issues found
+- ✅ Create flow working
+- ✅ Edit flow working
+- ✅ Delete flow with confirmation working
+- ✅ Update flow working
+- ✅ Sentiment data preserved during edit
+
+**Notes:**
+- JournalBloc already had update/delete event handlers
+- Clean separation between create and edit modes
+- Confirmation dialog prevents accidental deletions
+- All sentiment analysis features work in edit mode
+- User can re-analyze sentiment before updating
+
+---
+
 ## Pending Tasks
 
 ### Immediate Next Steps (From TASKS.md)
@@ -869,7 +949,7 @@ None currently.
 
 ## Statistics
 
-**Total Commits:** 16
+**Total Commits:** 18
 **Files Created:** 38
 **Lines of Code:** ~3800+
 **Documentation Lines:** ~1350+

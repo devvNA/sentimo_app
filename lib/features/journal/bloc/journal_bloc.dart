@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/entities/journal_entry.dart';
 import '../../../data/repositories/journal_repository.dart';
@@ -23,16 +25,20 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     JournalLoadRequested event,
     Emitter<JournalState> emit,
   ) async {
+    log('📚 [JournalBloc] Loading journal entries...');
     emit(const JournalLoading());
     try {
       final entries = await _journalRepository.getJournalEntries();
       
       if (entries.isEmpty) {
+        log('📭 [JournalBloc] No entries found');
         emit(const JournalEmpty());
       } else {
+        log('✅ [JournalBloc] Loaded ${entries.length} entries');
         emit(JournalLoaded(entries));
       }
     } catch (e) {
+      log('❌ [JournalBloc] Load error: $e');
       emit(JournalError(_parseError(e.toString())));
     }
   }
@@ -41,15 +47,19 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     JournalRefreshRequested event,
     Emitter<JournalState> emit,
   ) async {
+    log('🔄 [JournalBloc] Refreshing journal entries...');
     try {
       final entries = await _journalRepository.getJournalEntries();
       
       if (entries.isEmpty) {
+        log('📭 [JournalBloc] No entries after refresh');
         emit(const JournalEmpty());
       } else {
+        log('✅ [JournalBloc] Refreshed ${entries.length} entries');
         emit(JournalLoaded(entries));
       }
     } catch (e) {
+      log('❌ [JournalBloc] Refresh error: $e');
       emit(JournalError(_parseError(e.toString())));
     }
   }
@@ -81,6 +91,9 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     JournalCreateRequestedWithSentiment event,
     Emitter<JournalState> emit,
   ) async {
+    log('✏️ [JournalBloc] Creating entry with sentiment...');
+    log('   Content length: ${event.content.length} chars');
+    log('   Sentiment: ${event.sentimentLabel ?? "none"}');
     emit(const JournalCreating());
     try {
       // Create the journal entry WITH sentiment data
@@ -91,6 +104,8 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
       
       // If we have sentiment score and tags, update them
       if (event.sentimentScore != null || event.sentimentTags != null) {
+        log('   Updating sentiment score: ${event.sentimentScore}');
+        log('   Updating sentiment tags: ${event.sentimentTags}');
         await _journalRepository.updateJournalEntry(
           id: entry.id,
           sentimentScore: event.sentimentScore,
@@ -98,11 +113,13 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
         );
       }
       
+      log('✅ [JournalBloc] Entry created successfully: ${entry.id}');
       emit(JournalCreated(entry));
       
       // Refresh to show the new entry
       add(const JournalRefreshRequested());
     } catch (e) {
+      log('❌ [JournalBloc] Create error: $e');
       emit(JournalError(_parseError(e.toString())));
     }
   }
@@ -128,14 +145,18 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     JournalUpdateRequested event,
     Emitter<JournalState> emit,
   ) async {
+    log('📝 [JournalBloc] Updating entry: ${event.id}');
+    log('   Content length: ${event.content.length} chars');
     try {
       await _journalRepository.updateJournalEntry(
         id: event.id,
         content: event.content,
       );
       
+      log('✅ [JournalBloc] Entry updated successfully');
       add(const JournalRefreshRequested());
     } catch (e) {
+      log('❌ [JournalBloc] Update error: $e');
       emit(JournalError(_parseError(e.toString())));
     }
   }
@@ -144,11 +165,14 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     JournalDeleteRequested event,
     Emitter<JournalState> emit,
   ) async {
+    log('🗑️ [JournalBloc] Deleting entry: ${event.id}');
     try {
       await _journalRepository.deleteJournalEntry(event.id);
       
+      log('✅ [JournalBloc] Entry deleted successfully');
       add(const JournalRefreshRequested());
     } catch (e) {
+      log('❌ [JournalBloc] Delete error: $e');
       emit(JournalError(_parseError(e.toString())));
     }
   }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:google_generative_ai/google_generative_ai.dart';
 
@@ -95,6 +96,9 @@ Do not include any explanation or additional text.
   // }
 
   Future<Map<String, dynamic>> analyzeSentimentComplete(String text) async {
+    log('🤖 [SentimentService] Starting sentiment analysis...');
+    log('   Text length: ${text.length} characters');
+    
     try {
       final prompt =
           '''
@@ -118,6 +122,7 @@ Guidelines:
 IMPORTANT: Respond with ONLY the JSON object, no additional text.
 ''';
 
+      log('📤 [SentimentService] Sending request to Gemini API...');
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
 
@@ -125,6 +130,8 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
         throw Exception('Empty response from Gemini API');
       }
 
+      log('📥 [SentimentService] Received response from Gemini API');
+      
       // Clean response text - remove markdown code blocks if present
       String jsonText = response.text!.trim();
       jsonText = jsonText
@@ -135,7 +142,7 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
       // Parse JSON response
       final jsonData = jsonDecode(jsonText) as Map<String, dynamic>;
 
-      return {
+      final result = {
         'sentiment': SentimentLabel.fromString(
           jsonData['sentiment'] as String?,
         ),
@@ -144,18 +151,34 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
             ? List<String>.from(jsonData['tags'] as List)
             : <String>[],
       };
+      
+      log('✅ [SentimentService] Analysis complete:');
+      log('   Sentiment: ${result['sentiment']}');
+      log('   Score: ${result['score']}');
+      log('   Tags: ${result['tags']}');
+      
+      return result;
     } catch (e) {
+      log('⚠️ [SentimentService] Detailed analysis failed: $e');
+      log('   Falling back to basic sentiment analysis...');
+      
       // Fallback to basic sentiment analysis if detailed fails
       try {
         final sentiment = await analyzeSentiment(text);
         final fallbackScore = _getScoreFromSentiment(sentiment);
 
-        return {
+        final fallbackResult = {
           'sentiment': sentiment,
           'score': fallbackScore,
           'tags': _getDefaultTagsFromSentiment(sentiment),
         };
+        
+        log('✅ [SentimentService] Fallback analysis complete: $sentiment');
+        return fallbackResult;
       } catch (e2) {
+        log('❌ [SentimentService] All analysis methods failed: $e2');
+        log('   Using ultimate fallback (neutral)');
+        
         // Ultimate fallback
         return {
           'sentiment': SentimentLabel.neutral,

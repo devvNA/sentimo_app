@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -101,6 +103,8 @@ class _NewEntryPageState extends State<NewEntryPage> {
   Future<void> _handleSave() async {
     if (_formKey.currentState!.validate()) {
       if (_isEditMode) {
+        log('💾 [NewEntryPage] Saving updated entry: ${widget.entry!.id}');
+        
         // Update existing entry
         context.read<JournalBloc>().add(
           JournalUpdateRequested(
@@ -111,6 +115,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
 
         // Update sentiment if analyzed
         if (_analyzedSentiment != null) {
+          log('   Including sentiment update: ${_analyzedSentiment!.name}');
           context.read<JournalBloc>().add(
             JournalSentimentUpdateRequested(
               id: widget.entry!.id,
@@ -125,6 +130,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
         await Future.delayed(const Duration(milliseconds: 500));
         
         if (mounted) {
+          log('✅ [NewEntryPage] Navigating back to HomePage');
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -135,6 +141,8 @@ class _NewEntryPageState extends State<NewEntryPage> {
           );
         }
       } else {
+        log('💾 [NewEntryPage] Saving new entry');
+        
         // Create journal entry request with sentiment data
         context.read<JournalBloc>().add(
           JournalCreateRequestedWithSentiment(
@@ -149,6 +157,8 @@ class _NewEntryPageState extends State<NewEntryPage> {
   }
 
   Future<void> _handleDelete() async {
+    log('🗑️ [NewEntryPage] Delete confirmation dialog shown');
+    
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -176,8 +186,11 @@ class _NewEntryPageState extends State<NewEntryPage> {
     );
 
     if (confirm == true && mounted) {
+      log('✅ [NewEntryPage] Delete confirmed, deleting entry: ${widget.entry!.id}');
       context.read<JournalBloc>().add(JournalDeleteRequested(widget.entry!.id));
       Navigator.of(context).pop();
+    } else {
+      log('❌ [NewEntryPage] Delete cancelled by user');
     }
   }
 

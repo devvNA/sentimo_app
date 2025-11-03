@@ -672,6 +672,71 @@ Container(
 
 ---
 
+### Empty State Dashed Border ✅
+**Status:** Completed  
+**Time:** 22:00 - 22:30  
+**Agent:** AI Assistant
+
+**Completed:**
+- ✅ Created reusable DashedBorderContainer widget
+- ✅ Implemented custom DashedBorderPainter with CustomPaint
+- ✅ Updated HomePage empty journal state with dashed border
+- ✅ Features:
+  - Customizable dash width (10px)
+  - Customizable dash spacing (6px)
+  - Customizable stroke width (2px)
+  - Customizable border radius (20px)
+  - Smooth rounded corners
+  - Optimized path computation
+- ✅ Improved empty state design:
+  - Larger icon (72px vs 64px)
+  - Better spacing (32px after icon)
+  - Improved padding (60px vertical, 40px horizontal)
+  - Enhanced text hierarchy
+  - More prominent visual design
+
+**Implementation:**
+```dart
+CustomPaint(
+  painter: DashedBorderPainter(
+    color: darkTextSecondary,
+    strokeWidth: 2.0,
+    dashWidth: 10.0,
+    dashSpace: 6.0,
+    borderRadius: 20.0,
+  ),
+  child: Container(...)
+)
+```
+
+**DashedBorderPainter:**
+- Uses Path.computeMetrics() for accurate path measurement
+- Draws dashed segments using extractPath()
+- Supports rounded rectangles with RRect
+- Efficient shouldRepaint() implementation
+- Clean separation of concerns
+
+**Files Created:**
+- `lib/core/widgets/dashed_border_container.dart` - Reusable dashed border widget
+
+**Files Modified:**
+- `lib/features/home/presentation/home_page.dart` - Updated empty state
+
+**Verification:**
+- ✅ `flutter analyze` - No issues found
+- ✅ Matches design mockup exactly
+- ✅ Smooth dashed border rendering
+- ✅ Reusable across the app
+
+**Notes:**
+- Pure Flutter implementation - no external packages required
+- Performant CustomPaint with optimized repaint logic
+- Can be reused for other dashed border needs
+- Supports any color, size, and border radius
+- Professional look for empty states
+
+---
+
 ## Pending Tasks
 
 ### Immediate Next Steps (From TASKS.md)
@@ -751,8 +816,8 @@ None currently.
 
 ## Statistics
 
-**Total Commits:** 12
-**Files Created:** 37
+**Total Commits:** 14
+**Files Created:** 38
 **Lines of Code:** ~3800+
 **Documentation Lines:** ~1350+
 **Test Coverage:** 0% (no tests yet)

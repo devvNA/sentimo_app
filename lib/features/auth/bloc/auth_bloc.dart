@@ -105,15 +105,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     log('🔵 [AuthBloc] Google Sign In requested');
     emit(const AuthLoading());
     try {
-      final result = await _authRepository.signInWithGoogle();
+      final response = await _authRepository.signInWithGoogle();
       
-      if (result) {
-        log('✅ [AuthBloc] Google Sign In flow initiated successfully');
-        // OAuth will handle the actual authentication via callback
-        // The auth state will change when user completes Google Sign In
+      if (response.user != null) {
+        log('✅ [AuthBloc] Google Sign In successful: ${response.user!.email}');
+        emit(AuthAuthenticated(response.user!));
       } else {
-        log('❌ [AuthBloc] Google Sign In flow failed to initiate');
-        emit(const AuthError('Failed to initiate Google Sign In'));
+        log('❌ [AuthBloc] Google Sign In failed: No user returned');
+        emit(const AuthError('Failed to sign in with Google'));
       }
     } catch (e) {
       log('❌ [AuthBloc] Google Sign In error: $e');
@@ -128,7 +127,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       return 'Please verify your email first';
     } else if (error.contains('User already registered')) {
       return 'Email already in use';
-    } else if (error.contains('OAuth') || error.contains('google')) {
+    } else if (error.contains('cancelled')) {
+      return 'Google Sign In was cancelled';
+    } else if (error.contains('OAuth') || error.contains('google') || error.contains('Google')) {
       return 'Google Sign In failed. Please try again.';
     }
     return 'An error occurred. Please try again.';

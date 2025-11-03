@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -5,6 +7,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
+import '../../auth/bloc/auth_state.dart';
+import '../../auth/presentation/login_page.dart';
 import '../../home/presentation/home_page.dart';
 import '../../journal/bloc/journal_bloc.dart';
 import '../../journal/presentation/new_entry_page.dart';
@@ -78,6 +82,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _handleLogout() {
+    log('🚪 [ProfilePage] Logout dialog shown');
+    
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -89,7 +95,10 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
+            onPressed: () {
+              log('❌ [ProfilePage] Logout cancelled');
+              Navigator.of(dialogContext).pop();
+            },
             child: Text(
               'Cancel',
               style: TextStyle(color: AppTheme.darkTextSecondary),
@@ -97,6 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           TextButton(
             onPressed: () {
+              log('✅ [ProfilePage] Logout confirmed');
               Navigator.of(dialogContext).pop();
               context.read<AuthBloc>().add(const AuthSignOutRequested());
             },
@@ -109,13 +119,32 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-      ),
-      body: SingleChildScrollView(
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthUnauthenticated) {
+          log('✅ [ProfilePage] Logout successful, navigating to LoginPage');
+          // Clear navigation stack and go to LoginPage
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+            (route) => false,
+          );
+        } else if (state is AuthError) {
+          log('❌ [ProfilePage] Logout error: ${state.message}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+        ),
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
@@ -243,6 +272,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

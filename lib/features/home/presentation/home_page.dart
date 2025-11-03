@@ -169,38 +169,43 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: AppTheme.brightBlue,
         child: const Icon(Icons.add, size: 28),
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.darkCard,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Icons.book_outlined,
-                  label: 'Journal',
-                  index: 0,
-                  isSelected: _selectedIndex == 0,
-                ),
-                _buildNavItem(
-                  icon: Icons.add_circle_outline,
-                  label: 'New Entry',
-                  index: 1,
-                  isSelected: _selectedIndex == 1,
-                ),
-                _buildNavItem(
-                  icon: Icons.person_outline,
-                  label: 'Profile',
-                  index: 2,
-                  isSelected: _selectedIndex == 2,
-                ),
-              ],
+      bottomNavigationBar: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: AppTheme.darkTextSecondary.withValues(alpha: 0.12),
             ),
-          ),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    icon: Icons.book_outlined,
+                    label: 'Journal',
+                    index: 0,
+                    isSelected: _selectedIndex == 0,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.add_circle_outline,
+                    label: 'New Entry',
+                    index: 1,
+                    isSelected: _selectedIndex == 1,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.person_outline,
+                    label: 'Profile',
+                    index: 2,
+                    isSelected: _selectedIndex == 2,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

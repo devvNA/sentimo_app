@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+
+import '../../features/journal/bloc/journal_bloc.dart';
+import '../../features/journal/presentation/entry_detail_page.dart';
 import '../entities/journal_entry.dart';
 import '../theme/app_theme.dart';
-import '../../features/journal/presentation/entry_detail_page.dart';
-import '../../features/journal/bloc/journal_bloc.dart';
 
 class JournalEntryCard extends StatelessWidget {
   final JournalEntry entry;
   final VoidCallback? onTap;
 
-  const JournalEntryCard({
-    super.key,
-    required this.entry,
-    this.onTap,
-  });
+  const JournalEntryCard({super.key, required this.entry, this.onTap});
 
   Color _getSentimentBgColor() {
     switch (entry.sentimentLabel) {
@@ -52,7 +49,8 @@ class JournalEntryCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
-        onTap: onTap ??
+        onTap:
+            onTap ??
             () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -76,11 +74,7 @@ class JournalEntryCard extends StatelessWidget {
                   color: _getSentimentBgColor(),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  _getSentimentIcon(),
-                  color: Colors.white,
-                  size: 36,
-                ),
+                child: Icon(_getSentimentIcon(), color: Colors.white, size: 36),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -91,7 +85,9 @@ class JournalEntryCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          dateFormat.format(entry.createdAt.toLocal()).toUpperCase(),
+                          dateFormat
+                              .format(entry.createdAt.toLocal())
+                              .toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -100,7 +96,9 @@ class JournalEntryCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          timeFormat.format(entry.createdAt.toLocal()).toUpperCase(),
+                          timeFormat
+                              .format(entry.createdAt.toLocal())
+                              .toUpperCase(),
                           style: TextStyle(
                             color: AppTheme.darkTextSecondary,
                             fontSize: 13,

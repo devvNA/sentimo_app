@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/entities/journal_entry.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/services/sentiment_service.dart';
+import '../../profile/presentation/profile_page.dart';
 import '../bloc/journal_bloc.dart';
 import '../bloc/journal_event.dart';
 import '../bloc/journal_state.dart';
-import '../../profile/presentation/profile_page.dart';
 
 class NewEntryPage extends StatefulWidget {
   const NewEntryPage({super.key});
@@ -19,7 +20,7 @@ class NewEntryPage extends StatefulWidget {
 class _NewEntryPageState extends State<NewEntryPage> {
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final int _selectedNavIndex = 1;
+  final int _selectedIndex = 1;
 
   // Sentiment analysis state
   bool _isAnalyzing = false;
@@ -67,7 +68,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
       setState(() {
         _isAnalyzing = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -83,27 +84,25 @@ class _NewEntryPageState extends State<NewEntryPage> {
     if (_formKey.currentState!.validate()) {
       // Create journal entry request with sentiment data
       context.read<JournalBloc>().add(
-            JournalCreateRequestedWithSentiment(
-              content: _contentController.text.trim(),
-              sentimentLabel: _analyzedSentiment?.name,
-              sentimentScore: _analyzedScore,
-              sentimentTags: _analyzedTags,
-            ),
-          );
+        JournalCreateRequestedWithSentiment(
+          content: _contentController.text.trim(),
+          sentimentLabel: _analyzedSentiment?.name,
+          sentimentScore: _analyzedScore,
+          sentimentTags: _analyzedTags,
+        ),
+      );
     }
   }
 
   void _onNavTapped(int index) {
-    if (index == _selectedNavIndex) return;
+    if (index == _selectedIndex) return;
 
     if (index == 0) {
       Navigator.of(context).pop();
     } else if (index == 2) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const ProfilePage(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const ProfilePage()));
     }
   }
 
@@ -128,7 +127,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
       case SentimentLabel.negative:
         return const Color(0xFFEF4444);
       case SentimentLabel.mixed:
-        return const Color(0xFFF59E0B);
+        return const Color.fromARGB(255, 252, 176, 35);
       case SentimentLabel.neutral:
       default:
         return const Color(0xFF6B7280);
@@ -193,7 +192,9 @@ class _NewEntryPageState extends State<NewEntryPage> {
                       decoration: InputDecoration(
                         hintText: 'What\'s on your mind?',
                         hintStyle: TextStyle(
-                          color: AppTheme.darkTextSecondary.withValues(alpha: 0.6),
+                          color: AppTheme.darkTextSecondary.withValues(
+                            alpha: 0.6,
+                          ),
                           fontSize: 16,
                         ),
                         border: InputBorder.none,
@@ -224,8 +225,14 @@ class _NewEntryPageState extends State<NewEntryPage> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: AppTheme.darkCard,
+                          color: Color(0xFF101826),
                           borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            width: 1.0,
+                            color: AppTheme.darkTextSecondary.withValues(
+                              alpha: 0.12,
+                            ),
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,9 +246,11 @@ class _NewEntryPageState extends State<NewEntryPage> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            if (_analyzedSentiment == null && !_isAnalyzing) ...[
+                            // Always show Analyze button (unless loading)
+                            if (!_isAnalyzing) ...[
                               SizedBox(
                                 height: 56,
+                                width: double.infinity,
                                 child: OutlinedButton.icon(
                                   onPressed: _handleAnalyze,
                                   style: OutlinedButton.styleFrom(
@@ -254,91 +263,149 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                   ),
-                                  icon: const Icon(Icons.auto_awesome, size: 24),
-                                  label: const Text(
-                                    'Analyze Sentiment',
-                                    style: TextStyle(
+                                  icon: const Icon(
+                                    Icons.auto_awesome,
+                                    size: 24,
+                                  ),
+                                  label: Text(
+                                    _analyzedSentiment == null
+                                        ? 'Analyze Sentiment'
+                                        : 'Re-analyze Sentiment',
+                                    style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
                               ),
-                            ] else if (_isAnalyzing) ...[
-                              Center(
+                            ],
+                            // Show loading state during analysis
+                            if (_isAnalyzing) ...[
+                              SizedBox(
+                                height: 56,
+                                width: double.infinity,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.brightBlue.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: AppTheme.brightBlue,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            color: AppTheme.brightBlue,
+                                            strokeWidth: 2.5,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Analyzing your emotions...',
+                                          style: TextStyle(
+                                            color: AppTheme.brightBlue,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            // Show results below the button
+                            if (_analyzedSentiment != null &&
+                                !_isAnalyzing) ...[
+                              const SizedBox(height: 20),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.darkBackground.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _getSentimentColor().withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    width: 1,
+                                  ),
+                                ),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: CircularProgressIndicator(
-                                        color: AppTheme.brightBlue,
-                                        strokeWidth: 3,
-                                      ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Overall Mood: ${_getSentimentMoodText()}',
+                                          style: TextStyle(
+                                            color: AppTheme.darkText,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        if (_analyzedScore != null)
+                                          Text(
+                                            '${_analyzedScore!.toStringAsFixed(1)}/10',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Analyzing your emotions...',
-                                      style: TextStyle(
-                                        color: AppTheme.darkText,
-                                        fontSize: 14,
+                                    if (_analyzedScore != null) ...[
+                                      const SizedBox(height: 12),
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: LinearProgressIndicator(
+                                          value: _analyzedScore! / 10,
+                                          minHeight: 8,
+                                          backgroundColor:
+                                              AppTheme.darkBackground,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                _getSentimentColor(),
+                                              ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
+                                    if (_analyzedTags != null &&
+                                        _analyzedTags!.isNotEmpty) ...[
+                                      const SizedBox(height: 16),
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        children: _analyzedTags!
+                                            .map(
+                                              (tag) => _buildSentimentChip(tag),
+                                            )
+                                            .toList(),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
-                            ] else if (_analyzedSentiment != null) ...[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Overall Mood: ${_getSentimentMoodText()}',
-                                    style: TextStyle(
-                                      color: AppTheme.darkText,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  if (_analyzedScore != null)
-                                    Text(
-                                      '${_analyzedScore!.toStringAsFixed(1)}/10',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              if (_analyzedScore != null) ...[
-                                const SizedBox(height: 12),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: LinearProgressIndicator(
-                                    value: _analyzedScore! / 10,
-                                    minHeight: 8,
-                                    backgroundColor: AppTheme.darkBackground,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      _getSentimentColor(),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              if (_analyzedTags != null && _analyzedTags!.isNotEmpty) ...[
-                                const SizedBox(height: 20),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: _analyzedTags!
-                                      .map((tag) => _buildSentimentChip(tag))
-                                      .toList(),
-                                ),
-                              ],
                             ],
                             const SizedBox(height: 24),
                             SizedBox(
                               height: 56,
                               child: ElevatedButton(
-                                onPressed: (isSaving || _isAnalyzing) ? null : _handleSave,
+                                onPressed: (isSaving || _isAnalyzing)
+                                    ? null
+                                    : _handleSave,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.brightBlue,
                                   foregroundColor: Colors.white,
@@ -376,38 +443,43 @@ class _NewEntryPageState extends State<NewEntryPage> {
           );
         },
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.darkCard,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Icons.book_outlined,
-                  label: 'Journal',
-                  index: 0,
-                  isSelected: _selectedNavIndex == 0,
-                ),
-                _buildNavItem(
-                  icon: Icons.add_circle_outline,
-                  label: 'New Entry',
-                  index: 1,
-                  isSelected: _selectedNavIndex == 1,
-                ),
-                _buildNavItem(
-                  icon: Icons.person_outline,
-                  label: 'Profile',
-                  index: 2,
-                  isSelected: _selectedNavIndex == 2,
-                ),
-              ],
+      bottomNavigationBar: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: AppTheme.darkTextSecondary.withValues(alpha: 0.12),
             ),
-          ),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    icon: Icons.book_outlined,
+                    label: 'Journal',
+                    index: 0,
+                    isSelected: _selectedIndex == 0,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.add_circle_outline,
+                    label: 'New Entry',
+                    index: 1,
+                    isSelected: _selectedIndex == 1,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.person_outline,
+                    label: 'Profile',
+                    index: 2,
+                    isSelected: _selectedIndex == 2,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -446,7 +518,9 @@ class _NewEntryPageState extends State<NewEntryPage> {
           Icon(
             icon,
             size: 28,
-            color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+            color: isSelected
+                ? AppTheme.brightBlue
+                : AppTheme.darkTextSecondary,
           ),
           const SizedBox(height: 4),
           Text(
@@ -454,7 +528,9 @@ class _NewEntryPageState extends State<NewEntryPage> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? AppTheme.brightBlue : AppTheme.darkTextSecondary,
+              color: isSelected
+                  ? AppTheme.brightBlue
+                  : AppTheme.darkTextSecondary,
             ),
           ),
         ],

@@ -6,6 +6,7 @@ import 'core/config/env_config.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/journal_repository.dart';
+import 'data/services/sentiment_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/bloc/auth_event.dart';
 import 'features/auth/bloc/auth_state.dart' as auth_state;
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
       providers: [
         RepositoryProvider(create: (context) => AuthRepository(supabase)),
         RepositoryProvider(create: (context) => JournalRepository(supabase)),
+        RepositoryProvider(create: (context) => SentimentService()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -45,7 +47,10 @@ class MyApp extends StatelessWidget {
             create: (context) => AuthBloc(context.read<AuthRepository>()),
           ),
           BlocProvider(
-            create: (context) => JournalBloc(context.read<JournalRepository>()),
+            create: (context) => JournalBloc(
+              context.read<JournalRepository>(),
+              context.read<SentimentService>(),
+            ),
           ),
         ],
         child: MaterialApp(

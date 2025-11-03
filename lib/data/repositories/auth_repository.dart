@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
@@ -19,7 +21,11 @@ class AuthRepository {
         password: password,
       );
       return response;
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }
@@ -34,7 +40,11 @@ class AuthRepository {
         password: password,
       );
       return response;
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }
@@ -50,7 +60,11 @@ class AuthRepository {
   Future<void> resetPassword(String email) async {
     try {
       await _supabase.auth.resetPasswordForEmail(email);
+    } on PostgrestException catch (e) {
+      log(e.message);
+      rethrow;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }

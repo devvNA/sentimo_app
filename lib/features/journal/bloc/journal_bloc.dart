@@ -1,12 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repositories/journal_repository.dart';
+import '../../../data/services/sentiment_service.dart';
 import 'journal_event.dart';
 import 'journal_state.dart';
 
 class JournalBloc extends Bloc<JournalEvent, JournalState> {
   final JournalRepository _journalRepository;
+  final SentimentService _sentimentService;
 
-  JournalBloc(this._journalRepository) : super(const JournalInitial()) {
+  JournalBloc(this._journalRepository, this._sentimentService) : super(const JournalInitial()) {
     on<JournalLoadRequested>(_onJournalLoadRequested);
     on<JournalRefreshRequested>(_onJournalRefreshRequested);
     on<JournalCreateRequested>(_onJournalCreateRequested);
@@ -56,15 +58,35 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
   ) async {
     emit(const JournalCreating());
     try {
+      // Step 1: Create the journal entry without sentiment
       final entry = await _journalRepository.createJournalEntry(
         content: event.content,
       );
       
       emit(JournalCreated(entry));
       
+      // Step 2: Analyze sentiment in the background
+      _analyzeSentimentAsync(entry.id, event.content);
+      
+      // Step 3: Refresh to show the new entry
       add(const JournalRefreshRequested());
     } catch (e) {
       emit(JournalError(_parseError(e.toString())));
+    }
+  }
+
+  void _analyzeSentimentAsync(String entryId, String content) async {
+    try {
+      // Analyze sentiment using Gemini API
+      final sentiment = await _sentimentService.analyzeSentiment(content);
+      
+      // Update the entry with sentiment
+      add(JournalSentimentUpdateRequested(
+        id: entryId,
+        sentimentLabel: sentiment.name,
+      ));
+    } catch (e) {
+      // Silent fail - entry will show "Analyzing..." state
     }
   }
 

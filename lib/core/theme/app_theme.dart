@@ -8,7 +8,7 @@ class AppTheme {
   static const Color white = Color(0xFFFFFFFF);
 
   static ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
+    useMaterial3: false,
     scaffoldBackgroundColor: offWhite,
     colorScheme: ColorScheme.light(
       primary: softBlue,
@@ -54,23 +54,15 @@ class AppTheme {
         fontWeight: FontWeight.w500,
         color: darkGray,
       ),
-      bodyLarge: TextStyle(
-        fontSize: 16,
-        color: darkGray,
-      ),
-      bodyMedium: TextStyle(
-        fontSize: 14,
-        color: darkGray,
-      ),
+      bodyLarge: TextStyle(fontSize: 16, color: darkGray),
+      bodyMedium: TextStyle(fontSize: 14, color: darkGray),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: softBlue,
         foregroundColor: white,
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -93,9 +85,7 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: white,
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   );
 }

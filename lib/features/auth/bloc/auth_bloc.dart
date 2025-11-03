@@ -1,0 +1,94 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../data/repositories/auth_repository.dart';
+import 'auth_event.dart';
+import 'auth_state.dart';
+
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final AuthRepository _authRepository;
+
+  AuthBloc(this._authRepository) : super(const AuthInitial()) {
+    on<AuthCheckRequested>(_onAuthCheckRequested);
+    on<AuthSignUpRequested>(_onAuthSignUpRequested);
+    on<AuthSignInRequested>(_onAuthSignInRequested);
+    on<AuthSignOutRequested>(_onAuthSignOutRequested);
+  }
+
+  Future<void> _onAuthCheckRequested(
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final user = _authRepository.currentUser;
+    if (user != null) {
+      emit(AuthAuthenticated(user));
+    } else {
+      emit(const AuthUnauthenticated());
+    }
+  }
+
+  Future<void> _onAuthSignUpRequested(
+    AuthSignUpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final response = await _authRepository.signUp(
+        email: event.email,
+        password: event.password,
+      );
+
+      if (response.user != null) {
+        emit(const AuthSuccess('Account created successfully! Please check your email for verification.'));
+        emit(AuthAuthenticated(response.user!));
+      } else {
+        emit(const AuthError('Failed to create account'));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> _onAuthSignInRequested(
+    AuthSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final response = await _authRepository.signIn(
+        email: event.email,
+        password: event.password,
+      );
+
+      if (response.user != null) {
+        emit(AuthAuthenticated(response.user!));
+      } else {
+        emit(const AuthError('Failed to sign in'));
+      }
+    } catch (e) {
+      emit(AuthError(_parseError(e.toString())));
+    }
+  }
+
+  Future<void> _onAuthSignOutRequested(
+    AuthSignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      await _authRepository.signOut();
+      emit(const AuthUnauthenticated());
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  String _parseError(String error) {
+    if (error.contains('Invalid login credentials')) {
+      return 'Invalid email or password';
+    } else if (error.contains('Email not confirmed')) {
+      return 'Please verify your email first';
+    } else if (error.contains('User already registered')) {
+      return 'Email already in use';
+    }
+    return 'An error occurred. Please try again.';
+  }
+}

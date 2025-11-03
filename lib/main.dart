@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'core/config/env_config.dart';
 import 'core/theme/app_theme.dart';
+import 'data/repositories/auth_repository.dart';
+import 'data/repositories/journal_repository.dart';
+import 'features/auth/bloc/auth_bloc.dart';
+import 'features/auth/bloc/auth_event.dart';
+import 'features/auth/bloc/auth_state.dart' as auth_state;
+import 'features/auth/presentation/login_page.dart';
+import 'features/home/presentation/home_page.dart';
+import 'features/journal/bloc/journal_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,11 +34,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sentimo',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (context) => AuthRepository(supabase)),
+        RepositoryProvider(create: (context) => JournalRepository(supabase)),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => AuthBloc(context.read<AuthRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => JournalBloc(context.read<JournalRepository>()),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'Sentimo',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          home: const SplashScreen(),
+        ),
+      ),
     );
   }
 }
@@ -52,15 +78,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
-    final session = supabase.auth.currentSession;
-    
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => session != null
-            ? const PlaceholderHomePage()
-            : const PlaceholderAuthPage(),
-      ),
-    );
+    context.read<AuthBloc>().add(const AuthCheckRequested());
+
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthWrapper()));
   }
 
   @override
@@ -71,17 +93,13 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.book_rounded,
-              size: 80,
-              color: AppTheme.softBlue,
-            ),
+            Icon(Icons.book_rounded, size: 80, color: AppTheme.softBlue),
             const SizedBox(height: 24),
             Text(
               'Sentimo',
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: AppTheme.softBlue,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.displayMedium?.copyWith(color: AppTheme.softBlue),
             ),
             const SizedBox(height: 8),
             Text(
@@ -89,9 +107,7 @@ class _SplashScreenState extends State<SplashScreen> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 48),
-            CircularProgressIndicator(
-              color: AppTheme.softBlue,
-            ),
+            CircularProgressIndicator(color: AppTheme.softBlue),
           ],
         ),
       ),
@@ -99,83 +115,26 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-class PlaceholderHomePage extends StatelessWidget {
-  const PlaceholderHomePage({super.key});
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Home Page',
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            const SizedBox(height: 16),
-            Text('User: ${supabase.auth.currentUser?.email}'),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () async {
-                await supabase.auth.signOut();
-                if (context.mounted) {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (_) => const PlaceholderAuthPage(),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Sign Out'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class PlaceholderAuthPage extends StatelessWidget {
-  const PlaceholderAuthPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.book_rounded,
-                size: 80,
-                color: AppTheme.softBlue,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Welcome to Sentimo',
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Track your emotional journey with AI',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              Text(
-                'Authentication page coming soon...',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ],
+    return BlocBuilder<AuthBloc, auth_state.AuthState>(
+      builder: (context, state) {
+        if (state is auth_state.AuthAuthenticated) {
+          return const HomePage();
+        } else if (state is auth_state.AuthUnauthenticated ||
+            state is auth_state.AuthError) {
+          return const LoginPage();
+        }
+        return Scaffold(
+          backgroundColor: AppTheme.offWhite,
+          body: Center(
+            child: CircularProgressIndicator(color: AppTheme.softBlue),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

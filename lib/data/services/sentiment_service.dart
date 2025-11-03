@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 import '../../core/config/env_config.dart';
@@ -95,7 +96,8 @@ Explanation: [brief explanation]
 
   Future<Map<String, dynamic>> analyzeSentimentComplete(String text) async {
     try {
-      final prompt = '''
+      final prompt =
+          '''
 Analyze the sentiment of this journal entry and provide detailed analysis.
 
 Journal entry:
@@ -125,15 +127,20 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
 
       // Clean response text - remove markdown code blocks if present
       String jsonText = response.text!.trim();
-      jsonText = jsonText.replaceAll('```json', '').replaceAll('```', '').trim();
+      jsonText = jsonText
+          .replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim();
 
       // Parse JSON response
       final jsonData = jsonDecode(jsonText) as Map<String, dynamic>;
 
       return {
-        'sentiment': SentimentLabel.fromString(jsonData['sentiment'] as String?),
+        'sentiment': SentimentLabel.fromString(
+          jsonData['sentiment'] as String?,
+        ),
         'score': (jsonData['score'] as num?)?.toDouble() ?? 5.0,
-        'tags': jsonData['tags'] != null 
+        'tags': jsonData['tags'] != null
             ? List<String>.from(jsonData['tags'] as List)
             : <String>[],
       };
@@ -142,7 +149,7 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
       try {
         final sentiment = await analyzeSentiment(text);
         final fallbackScore = _getScoreFromSentiment(sentiment);
-        
+
         return {
           'sentiment': sentiment,
           'score': fallbackScore,

@@ -11,7 +11,9 @@ import '../bloc/journal_event.dart';
 import '../bloc/journal_state.dart';
 
 class NewEntryPage extends StatefulWidget {
-  const NewEntryPage({super.key});
+  final JournalEntry? entry; // Optional - for edit mode
+  
+  const NewEntryPage({super.key, this.entry});
 
   @override
   State<NewEntryPage> createState() => _NewEntryPageState();
@@ -27,6 +29,22 @@ class _NewEntryPageState extends State<NewEntryPage> {
   SentimentLabel? _analyzedSentiment;
   double? _analyzedScore;
   List<String>? _analyzedTags;
+
+  bool get _isEditMode => widget.entry != null;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-populate data if editing
+    if (_isEditMode) {
+      _contentController.text = widget.entry!.content;
+      
+      // Load existing sentiment data
+      _analyzedSentiment = widget.entry!.sentimentLabel;
+      _analyzedScore = widget.entry!.sentimentScore;
+      _analyzedTags = widget.entry!.sentimentTags;
+    }
+  }
 
   @override
   void dispose() {
@@ -82,15 +100,74 @@ class _NewEntryPageState extends State<NewEntryPage> {
 
   void _handleSave() {
     if (_formKey.currentState!.validate()) {
-      // Create journal entry request with sentiment data
-      context.read<JournalBloc>().add(
-        JournalCreateRequestedWithSentiment(
-          content: _contentController.text.trim(),
-          sentimentLabel: _analyzedSentiment?.name,
-          sentimentScore: _analyzedScore,
-          sentimentTags: _analyzedTags,
+      if (_isEditMode) {
+        // Update existing entry
+        context.read<JournalBloc>().add(
+          JournalUpdateRequested(
+            id: widget.entry!.id,
+            content: _contentController.text.trim(),
+          ),
+        );
+        
+        // Update sentiment if analyzed
+        if (_analyzedSentiment != null) {
+          context.read<JournalBloc>().add(
+            JournalSentimentUpdateRequested(
+              id: widget.entry!.id,
+              sentimentLabel: _analyzedSentiment!.name,
+              sentimentScore: _analyzedScore,
+              sentimentTags: _analyzedTags,
+            ),
+          );
+        }
+      } else {
+        // Create journal entry request with sentiment data
+        context.read<JournalBloc>().add(
+          JournalCreateRequestedWithSentiment(
+            content: _contentController.text.trim(),
+            sentimentLabel: _analyzedSentiment?.name,
+            sentimentScore: _analyzedScore,
+            sentimentTags: _analyzedTags,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text(
+          'Delete Entry',
+          style: TextStyle(color: Colors.white),
         ),
+        content: const Text(
+          'Are you sure you want to delete this journal entry? This action cannot be undone.',
+          style: TextStyle(color: Color(0xFF94A3B8)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      context.read<JournalBloc>().add(
+        JournalDeleteRequested(widget.entry!.id),
       );
+      Navigator.of(context).pop();
     }
   }
 
@@ -145,7 +222,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
           icon: const Icon(Icons.close, size: 28),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(today),
+        title: Text(_isEditMode ? 'Edit Entry' : today),
         centerTitle: true,
       ),
       body: BlocConsumer<JournalBloc, JournalState>(
@@ -254,6 +331,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                 child: OutlinedButton.icon(
                                   onPressed: _handleAnalyze,
                                   style: OutlinedButton.styleFrom(
+                                    backgroundColor: Color(0xFF122339),
                                     foregroundColor: AppTheme.brightBlue,
                                     side: BorderSide(
                                       color: AppTheme.brightBlue,
@@ -272,7 +350,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                         ? 'Analyze Sentiment'
                                         : 'Re-analyze Sentiment',
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -399,39 +477,137 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                 ),
                               ),
                             ],
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              height: 56,
-                              child: ElevatedButton(
-                                onPressed: (isSaving || _isAnalyzing)
-                                    ? null
-                                    : _handleSave,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.brightBlue,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: isSaving
-                                    ? const SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
+                            const SizedBox(height: 16),
+                            const Divider(thickness: 0.2, color: Colors.grey),
+                            const SizedBox(height: 8),
+                            // Show different buttons based on mode
+                            if (_isEditMode) ...[
+                              // Edit mode: Show 3 buttons (Delete, Edit Icon, Update)
+                              Row(
+                                children: [
+                                  // Delete button
+                                  SizedBox(
+                                    height: 56,
+                                    width: 72,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1E293B),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: IconButton(
+                                        onPressed: (isSaving || _isAnalyzing)
+                                            ? null
+                                            : _handleDelete,
+                                        icon: const Icon(
+                                          Icons.delete_outline,
                                           color: Colors.white,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Save Entry',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
+                                          size: 28,
                                         ),
                                       ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Edit Icon button (disabled/visual only)
+                                  SizedBox(
+                                    height: 56,
+                                    width: 72,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1E293B),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: const Icon(
+                                        Icons.edit_outlined,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Update button
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 56,
+                                      child: ElevatedButton(
+                                        onPressed: (isSaving || _isAnalyzing)
+                                            ? null
+                                            : _handleSave,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppTheme.brightBlue,
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                        child: isSaving
+                                            ? const SizedBox(
+                                                height: 24,
+                                                width: 24,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2.5,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(Icons.check, size: 24),
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    'Update',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                            ] else ...[
+                              // Create mode: Show single Save button
+                              SizedBox(
+                                height: 48,
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: (isSaving || _isAnalyzing)
+                                      ? null
+                                      : _handleSave,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.brightBlue,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  child: isSaving
+                                      ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Save Entry',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

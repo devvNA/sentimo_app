@@ -146,7 +146,20 @@ class _HomePageState extends State<HomePage> {
                 itemCount: state.entries.length,
                 itemBuilder: (context, index) {
                   final entry = state.entries[index];
-                  return JournalEntryCard(entry: entry, onTap: () {});
+                  return JournalEntryCard(
+                    entry: entry,
+                    onTap: () {
+                      // Navigate to edit mode
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<JournalBloc>(),
+                            child: NewEntryPage(entry: entry),
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
             );

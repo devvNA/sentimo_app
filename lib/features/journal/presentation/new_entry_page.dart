@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../bloc/journal_bloc.dart';
 import '../bloc/journal_event.dart';
 import '../bloc/journal_state.dart';
+import '../../profile/presentation/profile_page.dart';
 
 class NewEntryPage extends StatefulWidget {
   const NewEntryPage({super.key});
@@ -33,8 +34,16 @@ class _NewEntryPageState extends State<NewEntryPage> {
   }
 
   void _onNavTapped(int index) {
-    if (index != 1) {
+    if (index == _selectedNavIndex) return;
+
+    if (index == 0) {
       Navigator.of(context).pop();
+    } else if (index == 2) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const ProfilePage(),
+        ),
+      );
     }
   }
 

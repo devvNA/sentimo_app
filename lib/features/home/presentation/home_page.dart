@@ -8,6 +8,7 @@ import '../../journal/bloc/journal_state.dart';
 import '../../journal/presentation/new_entry_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
+import '../../profile/presentation/profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,6 +31,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onNavTapped(int index) {
+    if (index == _selectedIndex) return;
+
     if (index == 1) {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -37,6 +40,12 @@ class _HomePageState extends State<HomePage> {
             value: context.read<JournalBloc>(),
             child: const NewEntryPage(),
           ),
+        ),
+      );
+    } else if (index == 2) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const ProfilePage(),
         ),
       );
     } else {

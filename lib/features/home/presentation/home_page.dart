@@ -17,6 +17,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -27,12 +29,28 @@ class _HomePageState extends State<HomePage> {
     context.read<JournalBloc>().add(const JournalRefreshRequested());
   }
 
+  void _onNavTapped(int index) {
+    if (index == 1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: context.read<JournalBloc>(),
+            child: const NewEntryPage(),
+          ),
+        ),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
       appBar: AppBar(
-        title: const Text('My Journal'),
+        title: const Text('Your Journal'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded),
@@ -72,30 +90,46 @@ class _HomePageState extends State<HomePage> {
 
           if (state is JournalEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.book_outlined,
-                    size: 80,
-                    color: Colors.grey.shade300,
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Container(
+                  padding: const EdgeInsets.all(48),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppTheme.darkTextSecondary.withValues(alpha: 0.3),
+                      width: 2,
+                      strokeAlign: BorderSide.strokeAlignInside,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No journal entries yet',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.grey,
-                        ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.book_outlined,
+                        size: 64,
+                        color: AppTheme.darkTextSecondary,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Your Journal is Empty',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Tap the \'+\' button to write your first entry\nand start your journey of reflection.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.darkTextSecondary,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Start your emotional journey\nby creating your first entry',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                ),
               ),
             );
           }
@@ -103,17 +137,15 @@ class _HomePageState extends State<HomePage> {
           if (state is JournalLoaded) {
             return RefreshIndicator(
               onRefresh: _onRefresh,
-              color: AppTheme.softBlue,
+              color: AppTheme.brightBlue,
               child: ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 itemCount: state.entries.length,
                 itemBuilder: (context, index) {
                   final entry = state.entries[index];
                   return JournalEntryCard(
                     entry: entry,
-                    onTap: () {
-                      // TODO: Navigate to entry detail page
-                    },
+                    onTap: () {},
                   );
                 },
               ),
@@ -123,7 +155,7 @@ class _HomePageState extends State<HomePage> {
           return const SizedBox.shrink();
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -134,10 +166,26 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
-        icon: const Icon(Icons.add),
-        label: const Text('New Entry'),
-        backgroundColor: AppTheme.softBlue,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.brightBlue,
+        child: const Icon(Icons.add, size: 28),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle_outline),
+            label: 'New Entry',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

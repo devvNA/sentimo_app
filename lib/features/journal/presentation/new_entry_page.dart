@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../bloc/journal_bloc.dart';
 import '../bloc/journal_event.dart';
@@ -15,6 +16,7 @@ class NewEntryPage extends StatefulWidget {
 class _NewEntryPageState extends State<NewEntryPage> {
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final int _selectedNavIndex = 1;
 
   @override
   void dispose() {
@@ -30,17 +32,37 @@ class _NewEntryPageState extends State<NewEntryPage> {
     }
   }
 
+  void _onNavTapped(int index) {
+    if (index != 1) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final dateFormat = DateFormat('MMMM dd, yyyy');
+    final today = dateFormat.format(DateTime.now());
+
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
       appBar: AppBar(
-        title: const Text('New Entry'),
+        leading: IconButton(
+          icon: const Icon(Icons.close, size: 28),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(today),
+        centerTitle: true,
       ),
       body: BlocConsumer<JournalBloc, JournalState>(
         listener: (context, state) {
           if (state is JournalCreated) {
             Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Entry saved! Analyzing sentiment...'),
+                backgroundColor: AppTheme.brightBlue,
+                duration: const Duration(seconds: 2),
+              ),
+            );
           } else if (state is JournalError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -53,132 +75,186 @@ class _NewEntryPageState extends State<NewEntryPage> {
         builder: (context, state) {
           final isCreating = state is JournalCreating;
 
-          return SafeArea(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+          return Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: TextFormField(
+                      controller: _contentController,
+                      maxLines: null,
+                      expands: true,
+                      textAlignVertical: TextAlignVertical.top,
+                      autofocus: true,
+                      style: TextStyle(
+                        color: AppTheme.darkText,
+                        fontSize: 16,
+                        height: 1.6,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'What\'s on your mind?',
+                        hintStyle: TextStyle(
+                          color: AppTheme.darkTextSecondary.withValues(alpha: 0.6),
+                          fontSize: 16,
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please write something';
+                        }
+                        if (value.trim().length < 10) {
+                          return 'Entry must be at least 10 characters';
+                        }
+                        return null;
+                      },
+                      enabled: !isCreating,
+                    ),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppTheme.darkCard,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Sentiment Analysis',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.lightbulb_outline_rounded,
-                                        color: AppTheme.mintGreen,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'How are you feeling today?',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              color: AppTheme.mintGreen,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Express your thoughts and emotions. AI will analyze the sentiment of your entry.',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _contentController,
-                            maxLines: 15,
-                            decoration: InputDecoration(
-                              hintText: 'Write your thoughts here...',
-                              alignLabelWithHint: true,
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Please write something';
-                              }
-                              if (value.trim().length < 10) {
-                                return 'Entry must be at least 10 characters';
-                              }
-                              return null;
-                            },
-                            enabled: !isCreating,
-                          ),
-                          const SizedBox(height: 16),
                           Text(
-                            'Characters: ${_contentController.text.length}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(color: Colors.grey),
-                            textAlign: TextAlign.right,
+                            'Overall Mood: Mostly Positive',
+                            style: TextStyle(
+                              color: AppTheme.darkText,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const Text(
+                            '8.5/10',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, -5),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: LinearProgressIndicator(
+                          value: 0.85,
+                          minHeight: 8,
+                          backgroundColor: AppTheme.darkBackground,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.mintGreen,
+                          ),
                         ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      child: SizedBox(
-                        width: double.infinity,
+                      ),
+                      const SizedBox(height: 20),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildSentimentChip('Gratitude'),
+                          _buildSentimentChip('Excitement'),
+                          _buildSentimentChip('Optimism'),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 56,
                         child: ElevatedButton(
                           onPressed: isCreating ? null : _handleSave,
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: AppTheme.brightBlue,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                           child: isCreating
                               ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
+                                  height: 24,
+                                  width: 24,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                    strokeWidth: 2.5,
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text('Save Entry'),
+                              : const Text(
+                                  'Save Entry',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedNavIndex,
+        onTap: _onNavTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book_outlined),
+            label: 'Journal',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle_outline),
+            label: 'New Entry',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSentimentChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E3A8A),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF60A5FA),
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

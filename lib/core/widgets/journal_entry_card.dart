@@ -13,17 +13,17 @@ class JournalEntryCard extends StatelessWidget {
     this.onTap,
   });
 
-  Color _getSentimentColor() {
+  Color _getSentimentBgColor() {
     switch (entry.sentimentLabel) {
       case SentimentLabel.positive:
-        return AppTheme.mintGreen;
+        return const Color(0xFF047857);
       case SentimentLabel.negative:
-        return Colors.redAccent;
+        return const Color(0xFF92400E);
       case SentimentLabel.mixed:
-        return Colors.orangeAccent;
+        return const Color(0xFF9A3412);
       case SentimentLabel.neutral:
       default:
-        return AppTheme.softBlue;
+        return const Color(0xFF1E3A8A);
     }
   }
 
@@ -43,66 +43,72 @@ class JournalEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
+    final dateFormat = DateFormat('MMM dd');
+    final timeFormat = DateFormat('hh:mm a');
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+          padding: const EdgeInsets.all(20),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  if (entry.sentimentLabel != null) ...[
-                    Icon(
-                      _getSentimentIcon(),
-                      color: _getSentimentColor(),
-                      size: 24,
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  color: _getSentimentBgColor(),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  _getSentimentIcon(),
+                  color: Colors.white,
+                  size: 36,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          dateFormat.format(entry.createdAt.toLocal()).toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        Text(
+                          timeFormat.format(entry.createdAt.toLocal()).toUpperCase(),
+                          style: TextStyle(
+                            color: AppTheme.darkTextSecondary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(height: 12),
                     Text(
-                      entry.sentimentLabel!.toDisplayString(),
+                      entry.content,
                       style: TextStyle(
-                        color: _getSentimentColor(),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        color: AppTheme.darkText,
+                        fontSize: 15,
+                        height: 1.5,
                       ),
-                    ),
-                  ] else ...[
-                    Icon(
-                      Icons.pending_rounded,
-                      color: Colors.grey,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Analyzing...',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  const Spacer(),
-                  Text(
-                    dateFormat.format(entry.createdAt.toLocal()),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                entry.content,
-                style: Theme.of(context).textTheme.bodyMedium,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

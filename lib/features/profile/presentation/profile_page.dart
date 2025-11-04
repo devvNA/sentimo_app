@@ -297,12 +297,15 @@ class _ProfilePageState extends State<ProfilePage> {
     Color? titleColor,
     Color? iconBgColor,
   }) {
-    return Container(
+    return Ink(
       decoration: BoxDecoration(
         color: AppTheme.darkCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         leading: Container(
           width: 56,

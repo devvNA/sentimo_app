@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../home/presentation/home_page.dart';
+import '../../journal/bloc/journal_bloc.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -111,6 +113,30 @@ class _RegisterPageState extends State<RegisterPage> {
             );
           } else if (state is AuthAuthenticated) {
             log('✅ [RegisterPage] User authenticated after registration: ${state.user.email}');
+            
+            // Navigate to HomePage after successful registration
+            log('🔄 [RegisterPage] Navigating to HomePage...');
+            // Store blocs before async gap
+            final authBloc = context.read<AuthBloc>();
+            final journalBloc = context.read<JournalBloc>();
+            final navigator = Navigator.of(context);
+            
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                navigator.pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => BlocProvider.value(
+                      value: authBloc,
+                      child: BlocProvider.value(
+                        value: journalBloc,
+                        child: const HomePage(),
+                      ),
+                    ),
+                  ),
+                  (route) => false,
+                );
+              }
+            });
           }
         },
         builder: (context, state) {

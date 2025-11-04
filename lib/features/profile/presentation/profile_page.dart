@@ -2,16 +2,17 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sentimo/main.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
-import '../../auth/presentation/login_page.dart';
 import '../../home/presentation/home_page.dart';
 import '../../journal/bloc/journal_bloc.dart';
 import '../../journal/presentation/new_entry_page.dart';
+import 'privacy_policy_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -24,6 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final int _selectedIndex = 2;
   String? _userEmail;
   String? _userName;
+  String? _userAvatarUrl;
 
   @override
   void initState() {
@@ -37,7 +39,8 @@ class _ProfilePageState extends State<ProfilePage> {
     if (user != null) {
       setState(() {
         _userEmail = user.email;
-        _userName = _extractNameFromEmail(user.email ?? '');
+        _userName = _extractNameFromEmail(user.userMetadata?['name']);
+        _userAvatarUrl = user.userMetadata?['avatar_url'];
       });
     }
   }
@@ -83,7 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _handleLogout() {
     log('🚪 [ProfilePage] Logout dialog shown');
-    
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,16 +128,13 @@ class _ProfilePageState extends State<ProfilePage> {
           log('✅ [ProfilePage] Logout successful, navigating to LoginPage');
           // Clear navigation stack and go to LoginPage
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginPage()),
+            MaterialPageRoute(builder: (_) => const SplashScreen()),
             (route) => false,
           );
         } else if (state is AuthError) {
           log('❌ [ProfilePage] Logout error: ${state.message}');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
         }
       },
@@ -145,134 +145,145 @@ class _ProfilePageState extends State<ProfilePage> {
           automaticallyImplyLeading: false,
         ),
         body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Container(
-              width: 160,
-              height: 160,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFCDB2),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Container(
-                  width: 80,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.person, size: 40, color: Colors.grey[400]),
-                      const SizedBox(height: 8),
-                      Container(width: 50, height: 2, color: Colors.grey[300]),
-                      const SizedBox(height: 4),
-                      Container(width: 50, height: 2, color: Colors.grey[300]),
-                      const SizedBox(height: 4),
-                      Container(width: 50, height: 2, color: Colors.grey[300]),
-                    ],
-                  ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              (_userAvatarUrl != null)
+                  ? CircleAvatar(
+                      radius: 80,
+                      backgroundImage: NetworkImage(_userAvatarUrl!),
+                    )
+                  : Container(
+                      width: 160,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFCDB2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 80,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: 50,
+                                height: 2,
+                                color: Colors.grey[300],
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                width: 50,
+                                height: 2,
+                                color: Colors.grey[300],
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                width: 50,
+                                height: 2,
+                                color: Colors.grey[300],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+              const SizedBox(height: 24),
+              Text(
+                _userName ?? 'Loading...',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              _userName ?? 'Loading...',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 8),
+              Text(
+                _userEmail ?? '',
+                style: TextStyle(
+                  color: AppTheme.darkTextSecondary,
+                  fontSize: 16,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _userEmail ?? '',
-              style: TextStyle(color: AppTheme.darkTextSecondary, fontSize: 16),
-            ),
-            const SizedBox(height: 48),
-            _buildMenuItem(
-              icon: Icons.person_outline,
-              iconColor: AppTheme.brightBlue,
-              title: 'Account Settings',
-              onTap: () {
-                // TODO: Navigate to account settings
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Account Settings - Coming Soon'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildMenuItem(
-              icon: Icons.lock_outline,
-              iconColor: AppTheme.brightBlue,
-              title: 'Privacy Policy',
-              onTap: () {
-                // TODO: Navigate to privacy policy
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Privacy Policy - Coming Soon'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildMenuItem(
-              icon: Icons.logout,
-              iconColor: Colors.red,
-              title: 'Log Out',
-              titleColor: Colors.red,
-              iconBgColor: const Color(0xFF4B1818),
-              onTap: _handleLogout,
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: 1,
-              width: double.infinity,
-              color: AppTheme.darkTextSecondary.withValues(alpha: 0.12),
-            ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(
-                    icon: Icons.book_outlined,
-                    label: 'Journal',
-                    index: 0,
-                    isSelected: _selectedIndex == 0,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.add_circle_outline,
-                    label: 'New Entry',
-                    index: 1,
-                    isSelected: _selectedIndex == 1,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.person_outline,
-                    label: 'Profile',
-                    index: 2,
-                    isSelected: _selectedIndex == 2,
-                  ),
-                ],
+              const SizedBox(height: 48),
+              _buildMenuItem(
+                icon: Icons.lock_outline,
+                iconColor: AppTheme.brightBlue,
+                title: 'Privacy Policy',
+                onTap: () {
+                  log('📄 [ProfilePage] Navigating to Privacy Policy');
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PrivacyPolicyPage(),
+                    ),
+                  );
+                },
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              _buildMenuItem(
+                icon: Icons.logout,
+                iconColor: Colors.red,
+                title: 'Log Out',
+                titleColor: Colors.red,
+                iconBgColor: const Color(0xFF4B1818),
+                onTap: _handleLogout,
+              ),
+            ],
+          ),
         ),
+        bottomNavigationBar: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: AppTheme.darkTextSecondary.withValues(alpha: 0.12),
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(
+                      icon: Icons.book_outlined,
+                      label: 'Journal',
+                      index: 0,
+                      isSelected: _selectedIndex == 0,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.add_circle_outline,
+                      label: 'New Entry',
+                      index: 1,
+                      isSelected: _selectedIndex == 1,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.person_outline,
+                      label: 'Profile',
+                      index: 2,
+                      isSelected: _selectedIndex == 2,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

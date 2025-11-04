@@ -98,9 +98,9 @@ class AuthRepository {
       final googleAccount = await signIn.authenticate();
       final googleAuthorization = await googleAccount.authorizationClient
           .authorizationForScopes([
-        'email',
-        'https://www.googleapis.com/auth/userinfo.profile',
-      ]);
+            'email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+          ]);
       final googleAuthentication = googleAccount.authentication;
       final idToken = googleAuthentication.idToken;
       final accessToken = googleAuthorization!.accessToken;
@@ -108,6 +108,14 @@ class AuthRepository {
       if (idToken == null) {
         throw 'No ID Token found.';
       }
+
+      log('✅ [AuthRepository] ID Token obtained');
+      log('🔑 [AuthRepository] Token details:');
+      log('   - Email: ${googleAccount.email}');
+      log('   - ID: ${googleAccount.id}');
+      log('   - idToken length: ${idToken.length} characters');
+      log('   - accessToken: ${accessToken != null ? "present" : "null"}');
+      log('🔵 [AuthRepository] Sending to Supabase signInWithIdToken...');
 
       return supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sentimo/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
@@ -75,59 +76,44 @@ class AuthRepository {
     try {
       log('🔵 [AuthRepository] Starting Google Sign In...');
 
-      /// TODO: Update the Web client ID with your own.
       /// Web Client ID that you registered with Google Cloud.
-      const webClientId = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+      const webClientId =
+          '574327579297-8oaneej2dqutahok85od8rt55mmkec43.apps.googleusercontent.com';
 
-      /// TODO: Update the iOS client ID with your own.
       /// iOS Client ID that you registered with Google Cloud.
-      const iosClientId = 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com';
+      const iosClientId =
+          '574327579297-oore65353egnohc8npivlkhklpc0cpkv.apps.googleusercontent.com';
 
       // Google sign in on Android will work without providing the Android
       // Client ID registered on Google Cloud.
 
-      final googleSignIn = GoogleSignIn(
-        scopes: <String>['email', 'profile'],
-        serverClientId: webClientId,
-      );
+      final GoogleSignIn signIn = GoogleSignIn.instance;
 
-      log('🔵 [AuthRepository] Initializing GoogleSignIn...');
+      // At the start of your app, initialize the GoogleSignIn instance
+      unawaited(
+        signIn.initialize(clientId: iosClientId, serverClientId: webClientId),
+      );
 
       // Perform the sign in
-      final googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
-        log('❌ [AuthRepository] Google Sign In cancelled by user');
-        throw AuthException('Google Sign In cancelled');
-      }
-
-      log('🔵 [AuthRepository] Google user signed in: ${googleUser.email}');
-      log('🔵 [AuthRepository] Getting Google authentication...');
-
-      final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      final accessToken = googleAuth.accessToken;
+      final googleAccount = await signIn.authenticate();
+      final googleAuthorization = await googleAccount.authorizationClient
+          .authorizationForScopes([
+        'email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+      ]);
+      final googleAuthentication = googleAccount.authentication;
+      final idToken = googleAuthentication.idToken;
+      final accessToken = googleAuthorization!.accessToken;
 
       if (idToken == null) {
-        log('❌ [AuthRepository] No ID Token found');
-        throw AuthException('No ID Token found');
+        throw 'No ID Token found.';
       }
 
-      log('✅ [AuthRepository] ID Token obtained');
-      log(
-        '🔵 [AuthRepository] Signing in to Supabase with Google credentials...',
-      );
-
-      final response = await _supabase.auth.signInWithIdToken(
+      return supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
         accessToken: accessToken,
       );
-
-      log(
-        '✅ [AuthRepository] Google Sign In successful: ${response.user?.email}',
-      );
-      return response;
     } on AuthException catch (e) {
       log('❌ [AuthRepository] Google Sign In error: ${e.message}');
       rethrow;

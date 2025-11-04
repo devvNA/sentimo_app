@@ -17,9 +17,9 @@ class JournalEntryCard extends StatelessWidget {
       case SentimentLabel.positive:
         return const Color(0xFF047857);
       case SentimentLabel.negative:
-        return const Color(0xFF92400E);
+        return const Color(0xFF951C04);
       case SentimentLabel.mixed:
-        return const Color(0xFF9A3412);
+        return const Color(0xFFBA8004);
       case SentimentLabel.neutral:
       default:
         return const Color(0xFF1E3A8A);

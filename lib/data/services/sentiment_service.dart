@@ -98,7 +98,7 @@ Do not include any explanation or additional text.
   Future<Map<String, dynamic>> analyzeSentimentComplete(String text) async {
     log('🤖 [SentimentService] Starting sentiment analysis...');
     log('   Text length: ${text.length} characters');
-    
+
     try {
       final prompt =
           '''
@@ -131,7 +131,7 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
       }
 
       log('📥 [SentimentService] Received response from Gemini API');
-      
+
       // Clean response text - remove markdown code blocks if present
       String jsonText = response.text!.trim();
       jsonText = jsonText
@@ -151,17 +151,17 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
             ? List<String>.from(jsonData['tags'] as List)
             : <String>[],
       };
-      
+
       log('✅ [SentimentService] Analysis complete:');
       log('   Sentiment: ${result['sentiment']}');
       log('   Score: ${result['score']}');
       log('   Tags: ${result['tags']}');
-      
+
       return result;
     } catch (e) {
       log('⚠️ [SentimentService] Detailed analysis failed: $e');
       log('   Falling back to basic sentiment analysis...');
-      
+
       // Fallback to basic sentiment analysis if detailed fails
       try {
         final sentiment = await analyzeSentiment(text);
@@ -172,13 +172,13 @@ IMPORTANT: Respond with ONLY the JSON object, no additional text.
           'score': fallbackScore,
           'tags': _getDefaultTagsFromSentiment(sentiment),
         };
-        
+
         log('✅ [SentimentService] Fallback analysis complete: $sentiment');
         return fallbackResult;
       } catch (e2) {
         log('❌ [SentimentService] All analysis methods failed: $e2');
         log('   Using ultimate fallback (neutral)');
-        
+
         // Ultimate fallback
         return {
           'sentiment': SentimentLabel.neutral,

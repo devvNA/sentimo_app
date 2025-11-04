@@ -104,7 +104,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
     if (_formKey.currentState!.validate()) {
       if (_isEditMode) {
         log('💾 [NewEntryPage] Saving updated entry: ${widget.entry!.id}');
-        
+
         // Update existing entry
         context.read<JournalBloc>().add(
           JournalUpdateRequested(
@@ -125,10 +125,10 @@ class _NewEntryPageState extends State<NewEntryPage> {
             ),
           );
         }
-        
+
         // Wait a bit for the update to process
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         if (mounted) {
           log('✅ [NewEntryPage] Navigating back to HomePage');
           Navigator.of(context).pop();
@@ -142,7 +142,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
         }
       } else {
         log('💾 [NewEntryPage] Saving new entry');
-        
+
         // Create journal entry request with sentiment data
         context.read<JournalBloc>().add(
           JournalCreateRequestedWithSentiment(
@@ -158,7 +158,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
 
   Future<void> _handleDelete() async {
     log('🗑️ [NewEntryPage] Delete confirmation dialog shown');
-    
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -186,7 +186,9 @@ class _NewEntryPageState extends State<NewEntryPage> {
     );
 
     if (confirm == true && mounted) {
-      log('✅ [NewEntryPage] Delete confirmed, deleting entry: ${widget.entry!.id}');
+      log(
+        '✅ [NewEntryPage] Delete confirmed, deleting entry: ${widget.entry!.id}',
+      );
       context.read<JournalBloc>().add(JournalDeleteRequested(widget.entry!.id));
       Navigator.of(context).pop();
     } else {
@@ -274,304 +276,163 @@ class _NewEntryPageState extends State<NewEntryPage> {
         builder: (context, state) {
           final isSaving = state is JournalCreating;
 
-          return Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: TextFormField(
-                      controller: _contentController,
-                      maxLines: null,
-                      expands: true,
-                      textAlignVertical: TextAlignVertical.top,
-                      autofocus: true,
-                      style: TextStyle(
-                        color: AppTheme.darkText,
-                        fontSize: 16,
-                        height: 1.6,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'What\'s on your mind?',
-                        hintStyle: TextStyle(
-                          color: AppTheme.darkTextSecondary.withValues(
-                            alpha: 0.6,
-                          ),
-                          fontSize: 16,
-                        ),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please write something';
-                        }
-                        if (value.trim().length < 10) {
-                          return 'Entry must be at least 10 characters';
-                        }
-                        return null;
-                      },
-                      enabled: !isSaving && !_isAnalyzing,
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Color(0xFF101826),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            width: 1.0,
-                            color: AppTheme.darkTextSecondary.withValues(
-                              alpha: 0.12,
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: TextFormField(
+                                controller: _contentController,
+                                maxLines: null,
+                                expands: true,
+                                textAlignVertical: TextAlignVertical.top,
+                                autofocus: true,
+                                style: TextStyle(
+                                  color: AppTheme.darkText,
+                                  fontSize: 16,
+                                  height: 1.6,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'What\'s on your mind?',
+                                  hintStyle: TextStyle(
+                                    color: AppTheme.darkTextSecondary
+                                        .withValues(alpha: 0.6),
+                                    fontSize: 16,
+                                  ),
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  errorBorder: InputBorder.none,
+                                  focusedErrorBorder: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Please write something';
+                                  }
+                                  if (value.trim().length < 10) {
+                                    return 'Entry must be at least 10 characters';
+                                  }
+                                  return null;
+                                },
+                                enabled: !isSaving && !_isAnalyzing,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Sentiment Analysis',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            // Always show Analyze button (unless loading)
-                            if (!_isAnalyzing) ...[
-                              SizedBox(
-                                height: 56,
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: _handleAnalyze,
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: Color(0xFF122339),
-                                    foregroundColor: AppTheme.brightBlue,
-                                    side: BorderSide(
-                                      color: AppTheme.brightBlue,
-                                      width: 2,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                  icon: const Icon(
-                                    Icons.auto_awesome,
-                                    size: 24,
-                                  ),
-                                  label: Text(
-                                    _analyzedSentiment == null
-                                        ? 'Analyze Sentiment'
-                                        : 'Re-analyze Sentiment',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            // Show loading state during analysis
-                            if (_isAnalyzing) ...[
-                              SizedBox(
-                                height: 56,
-                                width: double.infinity,
-                                child: Container(
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(24),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.brightBlue.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
+                                    color: Color(0xFF101826),
+                                    borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: AppTheme.brightBlue,
-                                      width: 2,
+                                      width: 1.0,
+                                      color: AppTheme.darkTextSecondary
+                                          .withValues(alpha: 0.12),
                                     ),
                                   ),
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Sentiment Analysis',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      // Always show Analyze button (unless loading)
+                                      if (!_isAnalyzing) ...[
                                         SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            color: AppTheme.brightBlue,
-                                            strokeWidth: 2.5,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'Analyzing your emotions...',
-                                          style: TextStyle(
-                                            color: AppTheme.brightBlue,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            // Show results below the button
-                            if (_analyzedSentiment != null &&
-                                !_isAnalyzing) ...[
-                              const SizedBox(height: 20),
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.darkBackground.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _getSentimentColor().withValues(
-                                      alpha: 0.3,
-                                    ),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Overall Mood: ${_getSentimentMoodText()}',
-                                          style: TextStyle(
-                                            color: AppTheme.darkText,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        if (_analyzedScore != null)
-                                          Text(
-                                            '${_analyzedScore!.toStringAsFixed(1)}/10',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    if (_analyzedScore != null) ...[
-                                      const SizedBox(height: 12),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: LinearProgressIndicator(
-                                          value: _analyzedScore! / 10,
-                                          minHeight: 8,
-                                          backgroundColor:
-                                              AppTheme.darkBackground,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                _getSentimentColor(),
+                                          height: 56,
+                                          width: double.infinity,
+                                          child: OutlinedButton.icon(
+                                            onPressed: _handleAnalyze,
+                                            style: OutlinedButton.styleFrom(
+                                              backgroundColor: Color(
+                                                0xFF122339,
                                               ),
-                                        ),
-                                      ),
-                                    ],
-                                    if (_analyzedTags != null &&
-                                        _analyzedTags!.isNotEmpty) ...[
-                                      const SizedBox(height: 16),
-                                      Wrap(
-                                        spacing: 8,
-                                        runSpacing: 8,
-                                        children: _analyzedTags!
-                                            .map(
-                                              (tag) => _buildSentimentChip(tag),
-                                            )
-                                            .toList(),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 16),
-                            const Divider(thickness: 0.2, color: Colors.grey),
-                            const SizedBox(height: 8),
-                            // Show different buttons based on mode
-                            if (_isEditMode) ...[
-                              // Edit mode: Show 3 buttons (Delete, Edit Icon, Update)
-                              Row(
-                                children: [
-                                  // Delete button
-                                  SizedBox(
-                                    height: 56,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Color(0xFFC82216),
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16.0,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: (isSaving || _isAnalyzing)
-                                          ? null
-                                          : _handleDelete,
-                                      child: const Icon(
-                                        Icons.delete_forever,
-                                        size: 28.0,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-
-                                  // Update button
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 56,
-                                      child: ElevatedButton(
-                                        onPressed: (isSaving || _isAnalyzing)
-                                            ? null
-                                            : _handleSave,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppTheme.brightBlue,
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              16,
+                                              foregroundColor:
+                                                  AppTheme.brightBlue,
+                                              side: BorderSide(
+                                                color: AppTheme.brightBlue,
+                                                width: 2,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                            ),
+                                            icon: const Icon(
+                                              Icons.auto_awesome,
+                                              size: 24,
+                                            ),
+                                            label: Text(
+                                              _analyzedSentiment == null
+                                                  ? 'Analyze Sentiment'
+                                                  : 'Re-analyze Sentiment',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                        child: isSaving
-                                            ? const SizedBox(
-                                                height: 24,
-                                                width: 24,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2.5,
-                                                      color: Colors.white,
-                                                    ),
-                                              )
-                                            : const Row(
+                                      ],
+                                      // Show loading state during analysis
+                                      if (_isAnalyzing) ...[
+                                        SizedBox(
+                                          height: 56,
+                                          width: double.infinity,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.brightBlue
+                                                  .withValues(alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: AppTheme.brightBlue,
+                                                width: 2,
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  Icon(Icons.check, size: 24),
-                                                  SizedBox(width: 8),
+                                                  SizedBox(
+                                                    width: 20,
+                                                    height: 20,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color: AppTheme
+                                                              .brightBlue,
+                                                          strokeWidth: 2.5,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(width: 12),
                                                   Text(
-                                                    'Update',
+                                                    'Analyzing your emotions...',
                                                     style: TextStyle(
+                                                      color:
+                                                          AppTheme.brightBlue,
                                                       fontSize: 16,
                                                       fontWeight:
                                                           FontWeight.w600,
@@ -579,55 +440,247 @@ class _NewEntryPageState extends State<NewEntryPage> {
                                                   ),
                                                 ],
                                               ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ] else ...[
-                              // Create mode: Show single Save button
-                              SizedBox(
-                                height: 48,
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: (isSaving || _isAnalyzing)
-                                      ? null
-                                      : _handleSave,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.brightBlue,
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                  child: isSaving
-                                      ? const SizedBox(
-                                          height: 24,
-                                          width: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2.5,
-                                            color: Colors.white,
-                                          ),
-                                        )
-                                      : const Text(
-                                          'Save Entry',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ),
+                                      ],
+                                      // Show results below the button
+                                      if (_analyzedSentiment != null &&
+                                          !_isAnalyzing) ...[
+                                        const SizedBox(height: 20),
+                                        Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.darkBackground
+                                                .withValues(alpha: 0.5),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: _getSentimentColor()
+                                                  .withValues(alpha: 0.3),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    'Overall Mood: ${_getSentimentMoodText()}',
+                                                    style: TextStyle(
+                                                      color: AppTheme.darkText,
+                                                      fontSize: 15,
+                                                    ),
+                                                  ),
+                                                  if (_analyzedScore != null)
+                                                    Text(
+                                                      '${_analyzedScore!.toStringAsFixed(1)}/10',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                              if (_analyzedScore != null) ...[
+                                                const SizedBox(height: 12),
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  child: LinearProgressIndicator(
+                                                    value: _analyzedScore! / 10,
+                                                    minHeight: 8,
+                                                    backgroundColor:
+                                                        AppTheme.darkBackground,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                          Color
+                                                        >(_getSentimentColor()),
+                                                  ),
+                                                ),
+                                              ],
+                                              if (_analyzedTags != null &&
+                                                  _analyzedTags!
+                                                      .isNotEmpty) ...[
+                                                const SizedBox(height: 16),
+                                                Wrap(
+                                                  spacing: 8,
+                                                  runSpacing: 8,
+                                                  children: _analyzedTags!
+                                                      .map(
+                                                        (tag) =>
+                                                            _buildSentimentChip(
+                                                              tag,
+                                                            ),
+                                                      )
+                                                      .toList(),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 16),
+                                      const Divider(
+                                        thickness: 0.2,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      // Show different buttons based on mode
+                                      if (_isEditMode) ...[
+                                        // Edit mode: Show 3 buttons (Delete, Edit Icon, Update)
+                                        Row(
+                                          children: [
+                                            // Delete button
+                                            SizedBox(
+                                              height: 56,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Color(
+                                                    0xFFC82216,
+                                                  ),
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          16.0,
+                                                        ),
+                                                  ),
+                                                ),
+                                                onPressed:
+                                                    (isSaving || _isAnalyzing)
+                                                    ? null
+                                                    : _handleDelete,
+                                                child: const Icon(
+                                                  Icons.delete_forever,
+                                                  size: 28.0,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+
+                                            // Update button
+                                            Expanded(
+                                              child: SizedBox(
+                                                height: 56,
+                                                child: ElevatedButton(
+                                                  onPressed:
+                                                      (isSaving || _isAnalyzing)
+                                                      ? null
+                                                      : _handleSave,
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        AppTheme.brightBlue,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    elevation: 0,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  child: isSaving
+                                                      ? const SizedBox(
+                                                          height: 24,
+                                                          width: 24,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                strokeWidth:
+                                                                    2.5,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                        )
+                                                      : const Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.check,
+                                                              size: 24,
+                                                            ),
+                                                            SizedBox(width: 8),
+                                                            Text(
+                                                              'Update',
+                                                              style: TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ] else ...[
+                                        // Create mode: Show single Save button
+                                        SizedBox(
+                                          height: 48,
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            onPressed:
+                                                (isSaving || _isAnalyzing)
+                                                ? null
+                                                : _handleSave,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  AppTheme.brightBlue,
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                            ),
+                                            child: isSaving
+                                                ? const SizedBox(
+                                                    height: 24,
+                                                    width: 24,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2.5,
+                                                          color: Colors.white,
+                                                        ),
+                                                  )
+                                                : const Text(
+                                                    'Save Entry',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ],
-                        ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),

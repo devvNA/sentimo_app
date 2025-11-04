@@ -34,10 +34,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Last updated: November 4, 2025',
-              style: TextStyle(
-                color: AppTheme.darkTextSecondary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppTheme.darkTextSecondary, fontSize: 14),
             ),
             const SizedBox(height: 32),
 
@@ -73,15 +70,11 @@ class PrivacyPolicyPage extends StatelessWidget {
               title: '2. How We Use Your Information',
               content: 'We use the information we collect to:',
             ),
-            _buildBulletPoint(
-              'Provide and maintain the Sentimo service',
-            ),
+            _buildBulletPoint('Provide and maintain the Sentimo service'),
             _buildBulletPoint(
               'Perform sentiment analysis on your journal entries using Google Gemini AI',
             ),
-            _buildBulletPoint(
-              'Improve and personalize your experience',
-            ),
+            _buildBulletPoint('Improve and personalize your experience'),
             _buildBulletPoint(
               'Send you important notifications about your account',
             ),
@@ -96,15 +89,9 @@ class PrivacyPolicyPage extends StatelessWidget {
               content:
                   'Your data is stored securely using Supabase, a secure cloud database platform. We implement industry-standard security measures including:',
             ),
-            _buildBulletPoint(
-              'Encryption in transit and at rest',
-            ),
-            _buildBulletPoint(
-              'Secure authentication protocols',
-            ),
-            _buildBulletPoint(
-              'Regular security audits and updates',
-            ),
+            _buildBulletPoint('Encryption in transit and at rest'),
+            _buildBulletPoint('Secure authentication protocols'),
+            _buildBulletPoint('Regular security audits and updates'),
             _buildBulletPoint(
               'Row Level Security (RLS) policies to protect your data',
             ),
@@ -140,21 +127,11 @@ class PrivacyPolicyPage extends StatelessWidget {
               title: '5. Your Privacy Rights',
               content: 'You have the right to:',
             ),
-            _buildBulletPoint(
-              'Access your personal information',
-            ),
-            _buildBulletPoint(
-              'Update or correct your information',
-            ),
-            _buildBulletPoint(
-              'Delete your account and all associated data',
-            ),
-            _buildBulletPoint(
-              'Export your journal entries',
-            ),
-            _buildBulletPoint(
-              'Opt-out of non-essential data collection',
-            ),
+            _buildBulletPoint('Access your personal information'),
+            _buildBulletPoint('Update or correct your information'),
+            _buildBulletPoint('Delete your account and all associated data'),
+            _buildBulletPoint('Export your journal entries'),
+            _buildBulletPoint('Opt-out of non-essential data collection'),
             const SizedBox(height: 24),
 
             // Data Retention
@@ -218,7 +195,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'privacy@sentimo.app',
+                    'devitazaqi@gmail.com',
                     style: TextStyle(
                       color: AppTheme.offWhite,
                       fontSize: 16,
@@ -262,10 +239,7 @@ class PrivacyPolicyPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required String content,
-  }) {
+  Widget _buildSection({required String title, required String content}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -362,18 +336,12 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             purpose,
-            style: TextStyle(
-              color: AppTheme.offWhite,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: AppTheme.offWhite, fontSize: 14),
           ),
           const SizedBox(height: 4),
           Text(
             url,
-            style: TextStyle(
-              color: AppTheme.darkTextSecondary,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppTheme.darkTextSecondary, fontSize: 12),
           ),
         ],
       ),

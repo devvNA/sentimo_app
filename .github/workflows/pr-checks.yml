@@ -1,0 +1,151 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  # Quick validation checks
+  quick-checks:
+    name: Quick Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check PR title format
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+          requireScope: false
+        continue-on-error: true
+      
+      - name: Check for large files
+        run: |
+          echo "Checking for files larger than 1MB..."
+          find . -type f -size +1M -not -path "./.git/*" -not -path "./build/*" | while read file; do
+            echo "⚠️ Large file detected: $file ($(du -h "$file" | cut -f1))"
+          done
+      
+      - name: Validate YAML files
+        run: |
+          if command -v yamllint &> /dev/null; then
+            yamllint .github/workflows/ || echo "yamllint not available"
+          else
+            echo "yamllint not installed, skipping"
+          fi
+        continue-on-error: true
+
+  # Label PR based on changes
+  auto-label:
+    name: Auto Label PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Label based on changed files
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+        continue-on-error: true
+
+  # Size check
+  pr-size:
+    name: Check PR Size
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Calculate PR size
+        run: |
+          base_branch=${{ github.event.pull_request.base.ref }}
+          head_branch=${{ github.event.pull_request.head.ref }}
+          
+          echo "Calculating changes from $base_branch to $head_branch"
+          
+          added=$(git diff origin/$base_branch...HEAD --numstat | awk '{s+=$1} END {print s}')
+          removed=$(git diff origin/$base_branch...HEAD --numstat | awk '{s+=$2} END {print s}')
+          
+          total=$((added + removed))
+          
+          echo "Lines added: $added"
+          echo "Lines removed: $removed"
+          echo "Total changes: $total"
+          
+          if [ "$total" -gt 1000 ]; then
+            echo "⚠️ This is a large PR with $total lines changed. Consider breaking it into smaller PRs."
+            echo "pr_size=large" >> $GITHUB_ENV
+          elif [ "$total" -gt 500 ]; then
+            echo "⚠️ This is a medium-sized PR with $total lines changed."
+            echo "pr_size=medium" >> $GITHUB_ENV
+          else
+            echo "✅ This is a small PR with $total lines changed."
+            echo "pr_size=small" >> $GITHUB_ENV
+          fi
+
+  # Test coverage check
+  coverage-check:
+    name: Test Coverage Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          SUPABASE_URL=https://test.supabase.co
+          SUPABASE_ANON_KEY=test_key
+          GEMINI_API_KEY=test_key
+          EOF
+      
+      - name: Run tests with coverage
+        run: flutter test --coverage
+      
+      - name: Check coverage threshold
+        run: |
+          # This is a simple check - you can enhance with lcov tools
+          if [ -f "coverage/lcov.info" ]; then
+            echo "✅ Coverage file generated"
+            lines=$(wc -l < coverage/lcov.info)
+            echo "Coverage file contains $lines lines"
+          else
+            echo "⚠️ No coverage file generated"
+          fi
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: pr-checks
+          name: pr-coverage-${{ github.event.pull_request.number }}
+        continue-on-error: true

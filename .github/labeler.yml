@@ -1,0 +1,66 @@
+# Configuration for auto-labeling pull requests
+# https://github.com/actions/labeler
+
+# Authentication related changes
+"auth":
+  - lib/features/auth/**/*
+  - lib/data/repositories/auth_repository.dart
+
+# Journal/Entry related changes
+"journal":
+  - lib/features/journal/**/*
+  - lib/features/home/**/*
+  - lib/data/repositories/journal_repository.dart
+
+# UI/Frontend changes
+"ui":
+  - lib/features/**/presentation/**/*
+  - lib/core/widgets/**/*
+  - lib/core/theme/**/*
+
+# Backend/Data layer changes
+"backend":
+  - lib/data/**/*
+  - supabase/**/*
+
+# Testing changes
+"tests":
+  - test/**/*
+  - "**/*_test.dart"
+
+# Documentation changes
+"documentation":
+  - "**/*.md"
+  - docs/**/*
+  - "*.md"
+
+# Configuration changes
+"config":
+  - pubspec.yaml
+  - analysis_options.yaml
+  - .github/**/*
+  - android/**/*
+  - ios/**/*
+
+# Security related
+"security":
+  - lib/core/config/env_config.dart
+  - lib/data/repositories/auth_repository.dart
+  - "**/security/**/*"
+
+# Performance improvements
+"performance":
+  - lib/data/services/sentiment_service.dart
+  - "**/performance/**/*"
+
+# Dependencies
+"dependencies":
+  - pubspec.yaml
+  - pubspec.lock
+
+# BloC/State management
+"bloc":
+  - "**/bloc/**/*"
+  - "**/*_bloc.dart"
+  - "**/*_event.dart"
+  - "**/*_state.dart"

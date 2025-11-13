@@ -1,0 +1,49 @@
+# Dependabot configuration for automated dependency updates
+# https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # GitHub Actions updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # Pub (Dart/Flutter) package updates
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "flutter"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+    ignore:
+      # Ignore major version updates for stable packages
+      - dependency-name: "flutter"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group test dependencies together
+      test-dependencies:
+        patterns:
+          - "mocktail"
+          - "bloc_test"
+          - "flutter_test"
+      # Group BloC packages together
+      bloc-packages:
+        patterns:
+          - "flutter_bloc"
+          - "bloc"
+          - "equatable"

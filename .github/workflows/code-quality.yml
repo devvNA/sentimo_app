@@ -1,0 +1,98 @@
+name: Code Quality Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality:
+    name: Comprehensive Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Run Dart/Flutter analyzer
+        run: |
+          echo "## Flutter Analyzer Results" >> quality-report.md
+          flutter analyze --no-fatal-infos 2>&1 | tee -a quality-report.md
+      
+      - name: Check code formatting
+        run: |
+          echo "" >> quality-report.md
+          echo "## Code Formatting Check" >> quality-report.md
+          dart format --set-exit-if-changed . 2>&1 | tee -a quality-report.md || echo "Formatting issues found" >> quality-report.md
+        continue-on-error: true
+      
+      - name: Calculate code metrics
+        run: |
+          echo "" >> quality-report.md
+          echo "## Code Metrics" >> quality-report.md
+          echo "### Lines of Code" >> quality-report.md
+          find lib -name "*.dart" | xargs wc -l | tail -1 >> quality-report.md
+          echo "" >> quality-report.md
+          echo "### Dart Files Count" >> quality-report.md
+          find lib -name "*.dart" | wc -l >> quality-report.md
+          echo "" >> quality-report.md
+          echo "### Test Files Count" >> quality-report.md
+          find test -name "*_test.dart" | wc -l >> quality-report.md
+      
+      - name: Check for TODOs and FIXMEs
+        run: |
+          echo "" >> quality-report.md
+          echo "## Technical Debt Markers" >> quality-report.md
+          echo "### TODOs:" >> quality-report.md
+          grep -r "TODO" lib --include="*.dart" || echo "No TODOs found" >> quality-report.md
+          echo "" >> quality-report.md
+          echo "### FIXMEs:" >> quality-report.md
+          grep -r "FIXME" lib --include="*.dart" || echo "No FIXMEs found" >> quality-report.md
+        continue-on-error: true
+      
+      - name: Check for hardcoded secrets (basic check)
+        run: |
+          echo "" >> quality-report.md
+          echo "## Security Check (Basic)" >> quality-report.md
+          # Check for common secret patterns
+          if grep -r "api_key\s*=\s*['\"]" lib --include="*.dart"; then
+            echo "⚠️ Potential hardcoded API keys found!" >> quality-report.md
+          else
+            echo "✅ No obvious hardcoded secrets detected" >> quality-report.md
+          fi
+        continue-on-error: true
+      
+      - name: Upload quality report
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-quality-report
+          path: quality-report.md
+          retention-days: 30
+      
+      - name: Comment PR with quality report
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('quality-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '# 📊 Code Quality Report\n\n' + report
+            });
+        continue-on-error: true

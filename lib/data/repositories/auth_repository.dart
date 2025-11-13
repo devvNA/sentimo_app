@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sentimo/core/config/env_config.dart';
 import 'package:sentimo/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -76,16 +77,9 @@ class AuthRepository {
     try {
       log('🔵 [AuthRepository] Starting Google Sign In...');
 
-      /// Web Client ID that you registered with Google Cloud.
-      const webClientId =
-          '574327579297-8oaneej2dqutahok85od8rt55mmkec43.apps.googleusercontent.com';
-
-      /// iOS Client ID that you registered with Google Cloud.
-      const iosClientId =
-          '574327579297-oore65353egnohc8npivlkhklpc0cpkv.apps.googleusercontent.com';
-
-      // Google sign in on Android will work without providing the Android
-      // Client ID registered on Google Cloud.
+      // SECURITY FIX: Client IDs now loaded from environment config
+      final webClientId = EnvConfig.googleWebClientId;
+      final iosClientId = EnvConfig.googleIosClientId;
 
       final GoogleSignIn signIn = GoogleSignIn.instance;
 
@@ -106,14 +100,9 @@ class AuthRepository {
         throw 'No ID Token found.';
       }
 
+      // SECURITY FIX: Reduced logging for production
       log('✅ [AuthRepository] ID Token obtained');
-      log('🔑 [AuthRepository] Token details:');
-      log('   - Email: ${googleAccount.email}');
-      log('   - ID: ${googleAccount.id}');
-      log('   - idToken length: ${idToken.length} characters');
-      // ignore: unnecessary_null_comparison
-      log('   - accessToken: ${accessToken != null ? "present" : "null"}');
-      log('🔵 [AuthRepository] Sending to Supabase signInWithIdToken...');
+      log('🔑 [AuthRepository] Authenticating with Supabase...');
 
       return supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,

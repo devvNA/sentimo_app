@@ -85,7 +85,7 @@ jobs:
       
       - name: Archive test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: test-results
           path: |
@@ -133,7 +133,7 @@ jobs:
         run: flutter build apk --debug --no-shrink
       
       - name: Upload Android APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: android-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
@@ -179,7 +179,7 @@ jobs:
           zip -r ../../../ios-debug.zip Runner.app
       
       - name: Upload iOS build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: ios-debug-build
           path: ios-debug.zip

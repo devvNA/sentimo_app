@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/error_logger.dart';
 import '../../../data/repositories/journal_repository.dart';
 import 'favorites_event.dart';
 import 'favorites_state.dart';
@@ -16,6 +17,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     on<ToggleFavorite>(_onToggleFavorite);
     on<LoadFavorites>(_onLoadFavorites);
     on<RefreshFavorites>(_onRefreshFavorites);
+    on<RetryFavoritesOperation>(_onRetryFavoritesOperation);
   }
 
   /// Handle toggling favorite status
@@ -58,13 +60,21 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
       if (state is FavoritesLoaded || state is FavoriteToggled) {
         add(const RefreshFavorites());
       }
-    } catch (e) {
-      log('❌ [FavoritesBloc] Error toggling favorite: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'FavoritesBloc.ToggleFavorite',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {
+          'entryId': event.entryId,
+          'isFavorite': event.isFavorite,
+        },
+      );
 
       // Rollback to previous state on error
       emit(
         FavoritesError(
-          message: 'Failed to update favorite. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state is FavoriteToggling
               ? (state as FavoriteToggling).previousState
               : state,
@@ -103,12 +113,17 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
       log('✅ [FavoritesBloc] Loaded ${favorites.length} favorites');
 
       emit(FavoritesLoaded(favorites));
-    } catch (e) {
-      log('❌ [FavoritesBloc] Error loading favorites: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'FavoritesBloc.LoadFavorites',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'limit': event.limit, 'offset': event.offset},
+      );
 
       emit(
         FavoritesError(
-          message: 'Failed to load favorites. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
@@ -128,15 +143,30 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
       log('✅ [FavoritesBloc] Favorites refreshed');
 
       emit(FavoritesLoaded(favorites));
-    } catch (e) {
-      log('❌ [FavoritesBloc] Error refreshing favorites: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'FavoritesBloc.RefreshFavorites',
+        e,
+        stackTrace: stackTrace,
+      );
 
       emit(
         FavoritesError(
-          message: 'Failed to refresh favorites. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
     }
+  }
+
+  /// Handle retry of failed operation
+  Future<void> _onRetryFavoritesOperation(
+    RetryFavoritesOperation event,
+    Emitter<FavoritesState> emit,
+  ) async {
+    log('🔄 [FavoritesBloc] Retrying failed operation');
+
+    // Retry loading favorites
+    add(const LoadFavorites());
   }
 }

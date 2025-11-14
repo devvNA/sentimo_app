@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/error_logger.dart';
 import '../../../data/repositories/streak_repository.dart';
 import 'streak_event.dart';
 import 'streak_state.dart';
@@ -17,6 +18,7 @@ class StreakBloc extends Bloc<StreakEvent, StreakState> {
     on<UpdateStreak>(_onUpdateStreak);
     on<CheckStreakExpiry>(_onCheckStreakExpiry);
     on<RefreshStreak>(_onRefreshStreak);
+    on<RetryStreakOperation>(_onRetryStreakOperation);
   }
 
   /// Handle loading streak data
@@ -36,10 +38,10 @@ class StreakBloc extends Bloc<StreakEvent, StreakState> {
       );
 
       emit(StreakLoaded(streakData));
-    } catch (e) {
-      log('❌ [StreakBloc] Error loading streak: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError('StreakBloc.LoadStreak', e, stackTrace: stackTrace);
 
-      emit(StreakError('Failed to load streak data. Please try again.'));
+      emit(StreakError(ErrorLogger.getUserFriendlyMessage(e)));
     }
   }
 
@@ -85,10 +87,14 @@ class StreakBloc extends Bloc<StreakEvent, StreakState> {
         // No milestone, just emit loaded state
         emit(StreakLoaded(updatedStreakData));
       }
-    } catch (e) {
-      log('❌ [StreakBloc] Error updating streak: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'StreakBloc.UpdateStreak',
+        e,
+        stackTrace: stackTrace,
+      );
 
-      emit(StreakError('Failed to update streak. Please try again.'));
+      emit(StreakError(ErrorLogger.getUserFriendlyMessage(e)));
     }
   }
 
@@ -127,10 +133,14 @@ class StreakBloc extends Bloc<StreakEvent, StreakState> {
         log('✅ [StreakBloc] Streak is still active');
         emit(StreakLoaded(updatedStreakData));
       }
-    } catch (e) {
-      log('❌ [StreakBloc] Error checking streak expiry: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'StreakBloc.CheckStreakExpiry',
+        e,
+        stackTrace: stackTrace,
+      );
 
-      emit(StreakError('Failed to check streak status. Please try again.'));
+      emit(StreakError(ErrorLogger.getUserFriendlyMessage(e)));
     }
   }
 
@@ -147,10 +157,25 @@ class StreakBloc extends Bloc<StreakEvent, StreakState> {
       log('✅ [StreakBloc] Streak refreshed');
 
       emit(StreakLoaded(streakData));
-    } catch (e) {
-      log('❌ [StreakBloc] Error refreshing streak: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'StreakBloc.RefreshStreak',
+        e,
+        stackTrace: stackTrace,
+      );
 
-      emit(StreakError('Failed to refresh streak data. Please try again.'));
+      emit(StreakError(ErrorLogger.getUserFriendlyMessage(e)));
     }
+  }
+
+  /// Handle retry of failed operation
+  Future<void> _onRetryStreakOperation(
+    RetryStreakOperation event,
+    Emitter<StreakState> emit,
+  ) async {
+    log('🔄 [StreakBloc] Retrying failed operation');
+
+    // Retry loading streak data
+    add(const LoadStreak());
   }
 }

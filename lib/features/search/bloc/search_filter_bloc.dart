@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/entities/filter_state.dart';
+import '../../../core/utils/error_logger.dart';
 import '../../../data/repositories/journal_repository.dart';
 import 'search_filter_event.dart';
 import 'search_filter_state.dart';
@@ -156,12 +157,23 @@ class SearchFilterBloc extends Bloc<SearchFilterEvent, SearchFilterState> {
           totalCount: totalCount,
         ),
       );
-    } catch (e) {
-      log('❌ [SearchFilterBloc] Error applying filters: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'SearchFilterBloc.ApplyFilters',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {
+          'searchQuery': _currentFilters.searchQuery,
+          'sentimentFilter': _currentFilters.sentimentFilter,
+          'hasDateRange':
+              _currentFilters.startDate != null ||
+              _currentFilters.endDate != null,
+        },
+      );
 
       emit(
         SearchFilterError(
-          message: 'Failed to search entries. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           filters: _currentFilters,
         ),
       );

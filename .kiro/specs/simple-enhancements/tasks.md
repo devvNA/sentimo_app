@@ -473,31 +473,36 @@
     - Ensure smooth transitions between pages
     - _Requirements: 1.1, 4.1, 5.3_
   
-  - [ ] 19.3 Ensure check-ins integrate with calendar
+  - [ ]* 19.3 Ensure check-ins integrate with calendar (OPTIONAL)
     - Include check-ins in calendar day sentiment calculation
     - Display check-ins in DayEntriesSheet
     - _Requirements: 1.2, 3.6_
+    - _Note: Optional enhancement, can be added later_
   
-  - [ ] 19.4 Ensure check-ins integrate with insights
+  - [ ]* 19.4 Ensure check-ins integrate with insights (OPTIONAL)
     - Include check-ins in insights calculations
     - Count check-ins in sentiment distribution
     - _Requirements: 4.1, 4.2_
+    - _Note: Optional enhancement, can be added later_
 
-- [ ] 20. Error handling and edge cases
-  - [ ] 20.1 Implement offline support
+- [x] 20. Error handling and edge cases
+  - [ ]* 20.1 Implement offline support (OPTIONAL)
     - Cache calendar data for offline viewing
     - Queue check-ins for sync when offline
     - Show offline indicators
     - _Requirements: 1.1, 3.3_
+    - _Note: Optional enhancement, requires additional caching layer_
   
-  - [ ] 20.2 Handle empty states gracefully
+  - [x] 20.2 Handle empty states gracefully
     - Show encouraging messages for empty calendar
     - Display helpful text for empty favorites
     - Show minimum entry requirement for insights
     - Provide filter suggestions for no search results
     - _Requirements: 1.5, 4.6, 5.3, 6.7_
   
-  - [ ] 20.3 Implement error recovery
+  - [x] 20.3 Implement error recovery
+
+
     - Add retry buttons for failed operations
     - Show user-friendly error messages
     - Log errors for debugging

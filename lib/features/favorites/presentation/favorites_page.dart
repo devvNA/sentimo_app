@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sentimo/core/widgets/error_view.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../data/repositories/journal_repository.dart';
@@ -24,7 +25,16 @@ class FavoritesPage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  backgroundColor: Colors.red,
+                  backgroundColor: const Color(0xFFCF6B6B),
+                  action: SnackBarAction(
+                    label: 'Retry',
+                    textColor: AppTheme.white,
+                    onPressed: () {
+                      context.read<FavoritesBloc>().add(
+                        const RetryFavoritesOperation(),
+                      );
+                    },
+                  ),
                 ),
               );
             }
@@ -32,6 +42,18 @@ class FavoritesPage extends StatelessWidget {
           builder: (context, state) {
             if (state is FavoritesLoading) {
               return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is FavoritesError && state.previousState == null) {
+              return ErrorView(
+                message: state.message,
+                icon: Icons.star_border,
+                onRetry: () {
+                  context.read<FavoritesBloc>().add(
+                    const RetryFavoritesOperation(),
+                  );
+                },
+              );
             }
 
             if (state is FavoritesLoaded) {

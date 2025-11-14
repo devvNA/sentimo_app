@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/error_logger.dart';
 import '../../../data/repositories/journal_repository.dart';
 import 'calendar_event.dart';
 import 'calendar_state.dart';
@@ -9,6 +10,8 @@ import 'calendar_state.dart';
 /// BLoC for managing calendar view state and logic
 class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
   final JournalRepository _journalRepository;
+  DateTime? _lastRequestedMonth;
+  DateTime? _lastSelectedDate;
 
   CalendarBloc({required JournalRepository journalRepository})
     : _journalRepository = journalRepository,
@@ -16,6 +19,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     on<LoadCalendarMonth>(_onLoadCalendarMonth);
     on<SelectDate>(_onSelectDate);
     on<NavigateMonth>(_onNavigateMonth);
+    on<RetryCalendarOperation>(_onRetryCalendarOperation);
   }
 
   /// Handle loading calendar data for a specific month
@@ -26,6 +30,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     try {
       log('📅 [CalendarBloc] Loading calendar for month: ${event.month}');
 
+      _lastRequestedMonth = event.month;
       emit(const CalendarLoading());
 
       // Fetch entries grouped by date for the month
@@ -43,12 +48,17 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
           sentimentDataByDate: sentimentDataByDate,
         ),
       );
-    } catch (e) {
-      log('❌ [CalendarBloc] Error loading calendar: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'CalendarBloc.LoadCalendarMonth',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'month': event.month.toIso8601String()},
+      );
 
       emit(
         CalendarError(
-          message: 'Failed to load calendar data. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
@@ -71,6 +81,8 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
 
       log('📅 [CalendarBloc] Selecting date: ${event.date}');
 
+      _lastSelectedDate = event.date;
+
       // Fetch entries for the selected date
       final entries = await _journalRepository.getEntriesByDate(event.date);
 
@@ -83,12 +95,17 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
           previousState: currentState,
         ),
       );
-    } catch (e) {
-      log('❌ [CalendarBloc] Error selecting date: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'CalendarBloc.SelectDate',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'date': event.date.toIso8601String()},
+      );
 
       emit(
         CalendarError(
-          message: 'Failed to load entries for selected date.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
@@ -126,15 +143,38 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
 
       // Load the new month
       add(LoadCalendarMonth(newMonth));
-    } catch (e) {
-      log('❌ [CalendarBloc] Error navigating month: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'CalendarBloc.NavigateMonth',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'offset': event.offset},
+      );
 
       emit(
         CalendarError(
-          message: 'Failed to navigate to month.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
+    }
+  }
+
+  /// Handle retry of failed operation
+  Future<void> _onRetryCalendarOperation(
+    RetryCalendarOperation event,
+    Emitter<CalendarState> emit,
+  ) async {
+    log('🔄 [CalendarBloc] Retrying failed operation');
+
+    // Retry the last operation based on what was stored
+    if (_lastSelectedDate != null) {
+      add(SelectDate(_lastSelectedDate!));
+    } else if (_lastRequestedMonth != null) {
+      add(LoadCalendarMonth(_lastRequestedMonth!));
+    } else {
+      // Default to loading current month
+      add(LoadCalendarMonth(DateTime.now()));
     }
   }
 }

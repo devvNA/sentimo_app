@@ -27,3 +27,8 @@ class CheckStreakExpiry extends StreakEvent {
 class RefreshStreak extends StreakEvent {
   const RefreshStreak();
 }
+
+/// Event to retry failed streak operation
+class RetryStreakOperation extends StreakEvent {
+  const RetryStreakOperation();
+}

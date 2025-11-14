@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sentimo/core/widgets/error_view.dart';
 
 import '../../../core/entities/insights_data.dart';
 import '../../../core/theme/app_theme.dart';
@@ -32,7 +33,7 @@ class InsightsPage extends StatelessWidget {
             }
 
             if (state is InsightsError) {
-              return _buildErrorState(state);
+              return _buildErrorState(context, state);
             }
 
             if (state is InsightsLoaded) {
@@ -240,39 +241,13 @@ class InsightsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorState(InsightsError state) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 80, color: Colors.red),
-            const SizedBox(height: 24),
-            Text(
-              state.message,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppTheme.darkTextSecondary,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Retry loading
-                final period = state.period ?? InsightsPeriod.week;
-                (state as BuildContext).read<InsightsBloc>().add(
-                  LoadInsights(period),
-                );
-              },
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildErrorState(BuildContext context, InsightsError state) {
+    return ErrorView(
+      message: state.message,
+      icon: Icons.insights_outlined,
+      onRetry: () {
+        context.read<InsightsBloc>().add(const RetryInsightsOperation());
+      },
     );
   }
 

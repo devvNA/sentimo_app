@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/error_logger.dart';
 import '../../../data/repositories/quick_checkin_repository.dart';
 import '../../../data/repositories/streak_repository.dart';
 import 'quick_checkin_event.dart';
@@ -67,12 +68,17 @@ class QuickCheckInBloc extends Bloc<QuickCheckInEvent, QuickCheckInState> {
       // Auto-transition back to initial state after a short delay
       await Future.delayed(const Duration(milliseconds: 500));
       emit(const QuickCheckInInitial());
-    } catch (e) {
-      log('❌ [QuickCheckInBloc] Error submitting emoji check-in: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'QuickCheckInBloc.SubmitEmojiCheckIn',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'emoji': event.emoji},
+      );
 
       emit(
         QuickCheckInError(
-          message: 'Failed to submit check-in. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
@@ -129,12 +135,17 @@ class QuickCheckInBloc extends Bloc<QuickCheckInEvent, QuickCheckInState> {
       // Auto-transition back to initial state after a short delay
       await Future.delayed(const Duration(milliseconds: 500));
       emit(const QuickCheckInInitial());
-    } catch (e) {
-      log('❌ [QuickCheckInBloc] Error submitting rating check-in: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'QuickCheckInBloc.SubmitRatingCheckIn',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'rating': event.rating},
+      );
 
       emit(
         QuickCheckInError(
-          message: 'Failed to submit check-in. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
@@ -164,12 +175,17 @@ class QuickCheckInBloc extends Bloc<QuickCheckInEvent, QuickCheckInState> {
       final hasMore = checkIns.length >= event.limit;
 
       emit(QuickCheckInsLoaded(checkIns: checkIns, hasMore: hasMore));
-    } catch (e) {
-      log('❌ [QuickCheckInBloc] Error loading check-ins: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'QuickCheckInBloc.LoadCheckIns',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'limit': event.limit, 'offset': event.offset},
+      );
 
       emit(
         QuickCheckInError(
-          message: 'Failed to load check-ins. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
@@ -191,12 +207,16 @@ class QuickCheckInBloc extends Bloc<QuickCheckInEvent, QuickCheckInState> {
       emit(
         QuickCheckInsLoaded(checkIns: checkIns, hasMore: checkIns.length >= 50),
       );
-    } catch (e) {
-      log('❌ [QuickCheckInBloc] Error refreshing check-ins: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'QuickCheckInBloc.RefreshCheckIns',
+        e,
+        stackTrace: stackTrace,
+      );
 
       emit(
         QuickCheckInError(
-          message: 'Failed to refresh check-ins. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );
@@ -221,12 +241,17 @@ class QuickCheckInBloc extends Bloc<QuickCheckInEvent, QuickCheckInState> {
 
       // Reload check-ins after deletion
       add(const RefreshCheckIns());
-    } catch (e) {
-      log('❌ [QuickCheckInBloc] Error deleting check-in: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'QuickCheckInBloc.DeleteCheckIn',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'checkInId': event.checkInId},
+      );
 
       emit(
         QuickCheckInError(
-          message: 'Failed to delete check-in. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           previousState: state,
         ),
       );

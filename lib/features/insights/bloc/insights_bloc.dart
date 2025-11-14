@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/entities/insights_data.dart';
+import '../../../core/utils/error_logger.dart';
 import '../../../data/repositories/journal_repository.dart';
 import 'insights_event.dart';
 import 'insights_state.dart';
@@ -10,6 +11,7 @@ import 'insights_state.dart';
 /// BLoC for managing insights state and logic
 class InsightsBloc extends Bloc<InsightsEvent, InsightsState> {
   final JournalRepository _journalRepository;
+  InsightsPeriod _lastRequestedPeriod = InsightsPeriod.week;
 
   InsightsBloc({required JournalRepository journalRepository})
     : _journalRepository = journalRepository,
@@ -17,6 +19,7 @@ class InsightsBloc extends Bloc<InsightsEvent, InsightsState> {
     on<LoadInsights>(_onLoadInsights);
     on<ChangePeriod>(_onChangePeriod);
     on<RefreshInsights>(_onRefreshInsights);
+    on<RetryInsightsOperation>(_onRetryInsightsOperation);
   }
 
   /// Handle loading insights for a specific period
@@ -29,6 +32,7 @@ class InsightsBloc extends Bloc<InsightsEvent, InsightsState> {
         '📊 [InsightsBloc] Loading insights for period: ${event.period.name}',
       );
 
+      _lastRequestedPeriod = event.period;
       emit(InsightsLoading(event.period));
 
       // Fetch insights data from repository
@@ -52,12 +56,17 @@ class InsightsBloc extends Bloc<InsightsEvent, InsightsState> {
       }
 
       emit(InsightsLoaded(data: insightsData, period: event.period));
-    } catch (e) {
-      log('❌ [InsightsBloc] Error loading insights: $e');
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'InsightsBloc.LoadInsights',
+        e,
+        stackTrace: stackTrace,
+        additionalData: {'period': event.period.name},
+      );
 
       emit(
         InsightsError(
-          message: 'Failed to load insights. Please try again.',
+          message: ErrorLogger.getUserFriendlyMessage(e),
           period: event.period,
         ),
       );
@@ -96,15 +105,26 @@ class InsightsBloc extends Bloc<InsightsEvent, InsightsState> {
 
       // Reload insights
       add(LoadInsights(period));
-    } catch (e) {
-      log('❌ [InsightsBloc] Error refreshing insights: $e');
-
-      emit(
-        const InsightsError(
-          message: 'Failed to refresh insights. Please try again.',
-        ),
+    } catch (e, stackTrace) {
+      ErrorLogger.logError(
+        'InsightsBloc.RefreshInsights',
+        e,
+        stackTrace: stackTrace,
       );
+
+      emit(InsightsError(message: ErrorLogger.getUserFriendlyMessage(e)));
     }
+  }
+
+  /// Handle retry of failed operation
+  Future<void> _onRetryInsightsOperation(
+    RetryInsightsOperation event,
+    Emitter<InsightsState> emit,
+  ) async {
+    log('🔄 [InsightsBloc] Retrying failed operation');
+
+    // Retry loading insights with the last requested period
+    add(LoadInsights(_lastRequestedPeriod));
   }
 
   /// Get appropriate empty message based on period

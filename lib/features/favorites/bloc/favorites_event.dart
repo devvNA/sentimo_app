@@ -34,3 +34,8 @@ class LoadFavorites extends FavoritesEvent {
 class RefreshFavorites extends FavoritesEvent {
   const RefreshFavorites();
 }
+
+/// Event to retry failed favorites operation
+class RetryFavoritesOperation extends FavoritesEvent {
+  const RetryFavoritesOperation();
+}

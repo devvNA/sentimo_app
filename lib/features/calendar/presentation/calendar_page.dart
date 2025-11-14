@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sentimo/core/widgets/error_view.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -31,19 +32,23 @@ class _CalendarPageState extends State<CalendarPage> {
             if (state is DateSelected) {
               // Show bottom sheet with entries for selected date
               _showDayEntriesSheet(context, state);
-            } else if (state is CalendarError) {
-              // Show error message
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
             }
           },
           builder: (context, state) {
             if (state is CalendarLoading) {
               return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is CalendarError) {
+              return ErrorView(
+                message: state.message,
+                icon: Icons.calendar_today_outlined,
+                onRetry: () {
+                  context.read<CalendarBloc>().add(
+                    const RetryCalendarOperation(),
+                  );
+                },
+              );
             }
 
             if (state is CalendarLoaded || state is DateSelected) {
@@ -54,8 +59,8 @@ class _CalendarPageState extends State<CalendarPage> {
               return _buildCalendarView(context, calendarState);
             }
 
-            // Initial or error state
-            return const Center(child: Text('Loading calendar...'));
+            // Initial state
+            return const Center(child: CircularProgressIndicator());
           },
         ),
       ),

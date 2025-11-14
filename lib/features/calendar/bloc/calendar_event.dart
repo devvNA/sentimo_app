@@ -37,3 +37,8 @@ class NavigateMonth extends CalendarEvent {
   @override
   List<Object?> get props => [offset];
 }
+
+/// Event to retry failed calendar operation
+class RetryCalendarOperation extends CalendarEvent {
+  const RetryCalendarOperation();
+}

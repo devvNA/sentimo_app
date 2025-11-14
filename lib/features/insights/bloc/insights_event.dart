@@ -34,3 +34,8 @@ class ChangePeriod extends InsightsEvent {
 class RefreshInsights extends InsightsEvent {
   const RefreshInsights();
 }
+
+/// Event to retry failed insights operation
+class RetryInsightsOperation extends InsightsEvent {
+  const RetryInsightsOperation();
+}

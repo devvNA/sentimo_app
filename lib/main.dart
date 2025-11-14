@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sentimo/features/auth/bloc/auth_event.dart';
+import 'package:sentimo/features/home/presentation/home_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/env_config.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/journal_repository.dart';
+import 'data/repositories/quick_checkin_repository.dart';
+import 'data/repositories/streak_repository.dart';
 import 'data/services/sentiment_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/bloc/auth_state.dart' as auth_state;
 import 'features/auth/presentation/login_page.dart';
-import 'features/home/presentation/home_page.dart';
 import 'features/journal/bloc/journal_bloc.dart';
+import 'features/streak/bloc/streak_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +42,10 @@ class MyApp extends StatelessWidget {
       providers: [
         RepositoryProvider(create: (context) => AuthRepository(supabase)),
         RepositoryProvider(create: (context) => JournalRepository(supabase)),
+        RepositoryProvider(create: (context) => StreakRepository(supabase)),
+        RepositoryProvider(
+          create: (context) => QuickCheckInRepository(supabase),
+        ),
         RepositoryProvider(create: (context) => SentimentService()),
       ],
       child: MultiBlocProvider(
@@ -51,6 +58,10 @@ class MyApp extends StatelessWidget {
               context.read<JournalRepository>(),
               context.read<SentimentService>(),
             ),
+          ),
+          BlocProvider(
+            create: (context) =>
+                StreakBloc(streakRepository: context.read<StreakRepository>()),
           ),
         ],
         child: MaterialApp(

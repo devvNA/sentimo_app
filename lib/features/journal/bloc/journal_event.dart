@@ -38,17 +38,19 @@ class JournalCreateRequestedWithSentiment extends JournalEvent {
   });
 
   @override
-  List<Object?> get props => [content, sentimentLabel, sentimentScore, sentimentTags];
+  List<Object?> get props => [
+    content,
+    sentimentLabel,
+    sentimentScore,
+    sentimentTags,
+  ];
 }
 
 class JournalUpdateRequested extends JournalEvent {
   final String id;
   final String content;
 
-  const JournalUpdateRequested({
-    required this.id,
-    required this.content,
-  });
+  const JournalUpdateRequested({required this.id, required this.content});
 
   @override
   List<Object?> get props => [id, content];
@@ -77,5 +79,23 @@ class JournalSentimentUpdateRequested extends JournalEvent {
   });
 
   @override
-  List<Object?> get props => [id, sentimentLabel, sentimentScore, sentimentTags];
+  List<Object?> get props => [
+    id,
+    sentimentLabel,
+    sentimentScore,
+    sentimentTags,
+  ];
+}
+
+class JournalEntryFavoriteToggled extends JournalEvent {
+  final String entryId;
+  final bool isFavorite;
+
+  const JournalEntryFavoriteToggled({
+    required this.entryId,
+    required this.isFavorite,
+  });
+
+  @override
+  List<Object?> get props => [entryId, isFavorite];
 }

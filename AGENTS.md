@@ -12,7 +12,6 @@
 
 **Key Files:**
 - `specs/PRD.md` - Product requirements
-- `specs/TASKS.md` - Implementation roadmap
 - `technical_overview.md` - Architecture details
 - `PROGRESS.md` - Project timeline and history
 
@@ -22,7 +21,6 @@
 
 ✅ **ALWAYS consult all 3 files before work:**
    - `specs/PRD.md` - Understand requirements
-   - `specs/TASKS.md` - Check task context
    - `technical_overview.md` - Follow architecture
 
 ✅ **MUST update PROGRESS.md before commits:**

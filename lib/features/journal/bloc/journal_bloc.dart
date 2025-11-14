@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/entities/journal_entry.dart';
 import '../../../data/repositories/journal_repository.dart';
 import '../../../data/services/sentiment_service.dart';
@@ -11,14 +12,18 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
   final JournalRepository _journalRepository;
   final SentimentService _sentimentService;
 
-  JournalBloc(this._journalRepository, this._sentimentService) : super(const JournalInitial()) {
+  JournalBloc(this._journalRepository, this._sentimentService)
+    : super(const JournalInitial()) {
     on<JournalLoadRequested>(_onJournalLoadRequested);
     on<JournalRefreshRequested>(_onJournalRefreshRequested);
     on<JournalCreateRequested>(_onJournalCreateRequested);
-    on<JournalCreateRequestedWithSentiment>(_onJournalCreateRequestedWithSentiment);
+    on<JournalCreateRequestedWithSentiment>(
+      _onJournalCreateRequestedWithSentiment,
+    );
     on<JournalUpdateRequested>(_onJournalUpdateRequested);
     on<JournalDeleteRequested>(_onJournalDeleteRequested);
     on<JournalSentimentUpdateRequested>(_onJournalSentimentUpdateRequested);
+    on<JournalEntryFavoriteToggled>(_onJournalEntryFavoriteToggled);
   }
 
   Future<void> _onJournalLoadRequested(
@@ -29,7 +34,7 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     emit(const JournalLoading());
     try {
       final entries = await _journalRepository.getJournalEntries();
-      
+
       if (entries.isEmpty) {
         log('📭 [JournalBloc] No entries found');
         emit(const JournalEmpty());
@@ -50,7 +55,7 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     log('🔄 [JournalBloc] Refreshing journal entries...');
     try {
       final entries = await _journalRepository.getJournalEntries();
-      
+
       if (entries.isEmpty) {
         log('📭 [JournalBloc] No entries after refresh');
         emit(const JournalEmpty());
@@ -74,12 +79,12 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
       final entry = await _journalRepository.createJournalEntry(
         content: event.content,
       );
-      
+
       emit(JournalCreated(entry));
-      
+
       // Step 2: Analyze sentiment in the background
       _analyzeSentimentAsync(entry.id, event.content);
-      
+
       // Step 3: Refresh to show the new entry
       add(const JournalRefreshRequested());
     } catch (e) {
@@ -101,7 +106,7 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
         content: event.content,
         sentimentLabel: event.sentimentLabel,
       );
-      
+
       // If we have sentiment score and tags, update them
       if (event.sentimentScore != null || event.sentimentTags != null) {
         log('   Updating sentiment score: ${event.sentimentScore}');
@@ -112,10 +117,10 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
           sentimentTags: event.sentimentTags,
         );
       }
-      
+
       log('✅ [JournalBloc] Entry created successfully: ${entry.id}');
       emit(JournalCreated(entry));
-      
+
       // Refresh to show the new entry
       add(const JournalRefreshRequested());
     } catch (e) {
@@ -127,15 +132,19 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
   void _analyzeSentimentAsync(String entryId, String content) async {
     try {
       // Analyze sentiment using Gemini API with complete data
-      final sentimentData = await _sentimentService.analyzeSentimentComplete(content);
-      
+      final sentimentData = await _sentimentService.analyzeSentimentComplete(
+        content,
+      );
+
       // Update the entry with sentiment, score, and tags
-      add(JournalSentimentUpdateRequested(
-        id: entryId,
-        sentimentLabel: (sentimentData['sentiment'] as SentimentLabel).name,
-        sentimentScore: sentimentData['score'] as double,
-        sentimentTags: sentimentData['tags'] as List<String>,
-      ));
+      add(
+        JournalSentimentUpdateRequested(
+          id: entryId,
+          sentimentLabel: (sentimentData['sentiment'] as SentimentLabel).name,
+          sentimentScore: sentimentData['score'] as double,
+          sentimentTags: sentimentData['tags'] as List<String>,
+        ),
+      );
     } catch (e) {
       // Silent fail - entry will show "Analyzing..." state
     }
@@ -152,7 +161,7 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
         id: event.id,
         content: event.content,
       );
-      
+
       log('✅ [JournalBloc] Entry updated successfully');
       add(const JournalRefreshRequested());
     } catch (e) {
@@ -168,7 +177,7 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     log('🗑️ [JournalBloc] Deleting entry: ${event.id}');
     try {
       await _journalRepository.deleteJournalEntry(event.id);
-      
+
       log('✅ [JournalBloc] Entry deleted successfully');
       add(const JournalRefreshRequested());
     } catch (e) {
@@ -188,9 +197,27 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
         sentimentScore: event.sentimentScore,
         sentimentTags: event.sentimentTags,
       );
-      
+
       add(const JournalRefreshRequested());
     } catch (e) {
+      emit(JournalError(_parseError(e.toString())));
+    }
+  }
+
+  Future<void> _onJournalEntryFavoriteToggled(
+    JournalEntryFavoriteToggled event,
+    Emitter<JournalState> emit,
+  ) async {
+    log(
+      '⭐ [JournalBloc] Toggling favorite: ${event.entryId} to ${event.isFavorite}',
+    );
+    try {
+      await _journalRepository.toggleFavorite(event.entryId, event.isFavorite);
+
+      log('✅ [JournalBloc] Favorite toggled successfully');
+      add(const JournalRefreshRequested());
+    } catch (e) {
+      log('❌ [JournalBloc] Favorite toggle error: $e');
       emit(JournalError(_parseError(e.toString())));
     }
   }

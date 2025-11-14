@@ -40,6 +40,7 @@ class JournalEntry extends Equatable {
   final SentimentLabel? sentimentLabel;
   final double? sentimentScore;
   final List<String>? sentimentTags;
+  final bool isFavorite;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -50,6 +51,7 @@ class JournalEntry extends Equatable {
     this.sentimentLabel,
     this.sentimentScore,
     this.sentimentTags,
+    this.isFavorite = false,
     required this.createdAt,
     this.updatedAt,
   });
@@ -68,6 +70,7 @@ class JournalEntry extends Equatable {
       sentimentTags: json['sentiment_tags'] != null
           ? List<String>.from(json['sentiment_tags'] as List)
           : null,
+      isFavorite: json['is_favorite'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
@@ -83,6 +86,7 @@ class JournalEntry extends Equatable {
       'sentiment_label': sentimentLabel?.name,
       'sentiment_score': sentimentScore,
       'sentiment_tags': sentimentTags,
+      'is_favorite': isFavorite,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -95,6 +99,7 @@ class JournalEntry extends Equatable {
     SentimentLabel? sentimentLabel,
     double? sentimentScore,
     List<String>? sentimentTags,
+    bool? isFavorite,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -105,11 +110,22 @@ class JournalEntry extends Equatable {
       sentimentLabel: sentimentLabel ?? this.sentimentLabel,
       sentimentScore: sentimentScore ?? this.sentimentScore,
       sentimentTags: sentimentTags ?? this.sentimentTags,
+      isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
   @override
-  List<Object?> get props => [id, userId, content, sentimentLabel, sentimentScore, sentimentTags, createdAt, updatedAt];
+  List<Object?> get props => [
+    id,
+    userId,
+    content,
+    sentimentLabel,
+    sentimentScore,
+    sentimentTags,
+    isFavorite,
+    createdAt,
+    updatedAt,
+  ];
 }

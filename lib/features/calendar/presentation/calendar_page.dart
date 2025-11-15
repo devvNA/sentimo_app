@@ -18,6 +18,7 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   DateTime? _selectedDay;
+  DateTime? _lastShownSheetDate;
 
   @override
   Widget build(BuildContext context) {
@@ -27,41 +28,53 @@ class _CalendarPageState extends State<CalendarPage> {
             ..add(LoadCalendarMonth(DateTime.now())),
       child: Scaffold(
         appBar: AppBar(title: const Text('Mood Calendar'), centerTitle: true),
-        body: BlocConsumer<CalendarBloc, CalendarState>(
+        body: BlocListener<CalendarBloc, CalendarState>(
           listener: (context, state) {
             if (state is DateSelected) {
-              // Show bottom sheet with entries for selected date
-              _showDayEntriesSheet(context, state);
+              // Only show bottom sheet if it's a different date or first time
+              final shouldShow =
+                  _lastShownSheetDate == null ||
+                  !isSameDay(_lastShownSheetDate, state.selectedDate);
+
+              if (shouldShow) {
+                _lastShownSheetDate = state.selectedDate;
+                // Show bottom sheet with entries for selected date
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _showDayEntriesSheet(context, state);
+                });
+              }
             }
           },
-          builder: (context, state) {
-            if (state is CalendarLoading) {
+          child: BlocBuilder<CalendarBloc, CalendarState>(
+            builder: (context, state) {
+              if (state is CalendarLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state is CalendarError) {
+                return ErrorView(
+                  message: state.message,
+                  icon: Icons.calendar_today_outlined,
+                  onRetry: () {
+                    context.read<CalendarBloc>().add(
+                      const RetryCalendarOperation(),
+                    );
+                  },
+                );
+              }
+
+              if (state is CalendarLoaded || state is DateSelected) {
+                final calendarState = state is DateSelected
+                    ? state.previousState
+                    : state as CalendarLoaded;
+
+                return _buildCalendarView(context, calendarState);
+              }
+
+              // Initial state
               return const Center(child: CircularProgressIndicator());
-            }
-
-            if (state is CalendarError) {
-              return ErrorView(
-                message: state.message,
-                icon: Icons.calendar_today_outlined,
-                onRetry: () {
-                  context.read<CalendarBloc>().add(
-                    const RetryCalendarOperation(),
-                  );
-                },
-              );
-            }
-
-            if (state is CalendarLoaded || state is DateSelected) {
-              final calendarState = state is DateSelected
-                  ? state.previousState
-                  : state as CalendarLoaded;
-
-              return _buildCalendarView(context, calendarState);
-            }
-
-            // Initial state
-            return const Center(child: CircularProgressIndicator());
-          },
+            },
+          ),
         ),
       ),
     );
@@ -372,6 +385,11 @@ class _CalendarPageState extends State<CalendarPage> {
       backgroundColor: Colors.transparent,
       builder: (context) =>
           DayEntriesSheet(date: state.selectedDate, entries: state.entries),
-    );
+    ).then((_) {
+      // Reset tracking when sheet is closed so it can be shown again
+      setState(() {
+        _lastShownSheetDate = null;
+      });
+    });
   }
 }

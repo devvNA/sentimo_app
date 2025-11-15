@@ -71,17 +71,29 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     Emitter<CalendarState> emit,
   ) async {
     try {
-      // Only proceed if we have a loaded calendar state
-      if (state is! CalendarLoaded) {
+      // Get the current loaded state
+      CalendarLoaded currentState;
+
+      if (state is CalendarLoaded) {
+        currentState = state as CalendarLoaded;
+      } else if (state is DateSelected) {
+        currentState = (state as DateSelected).previousState;
+      } else {
         log('⚠️ [CalendarBloc] Cannot select date: calendar not loaded');
         return;
       }
 
-      final currentState = state as CalendarLoaded;
-
       log('📅 [CalendarBloc] Selecting date: ${event.date}');
 
       _lastSelectedDate = event.date;
+
+      // Emit loading state briefly to ensure state change is detected
+      emit(
+        CalendarLoaded(
+          currentMonth: currentState.currentMonth,
+          sentimentDataByDate: currentState.sentimentDataByDate,
+        ),
+      );
 
       // Fetch entries for the selected date
       final entries = await _journalRepository.getEntriesByDate(event.date);

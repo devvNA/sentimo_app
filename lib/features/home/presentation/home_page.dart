@@ -4,8 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/dashed_border_container.dart';
 import '../../../data/repositories/journal_repository.dart';
-import '../../../data/repositories/quick_checkin_repository.dart';
-import '../../../data/repositories/streak_repository.dart';
 import '../../calendar/presentation/calendar_page.dart';
 import '../../favorites/presentation/favorites_page.dart';
 import '../../favorites/presentation/widgets/journal_entry_card.dart';
@@ -15,10 +13,8 @@ import '../../journal/bloc/journal_event.dart';
 import '../../journal/bloc/journal_state.dart';
 import '../../journal/presentation/new_entry_page.dart';
 import '../../profile/presentation/profile_page.dart';
-import '../../quick_checkin/bloc/bloc.dart';
 import '../../quick_checkin/presentation/widgets/quick_checkin_button.dart';
 import '../../search/bloc/bloc.dart';
-import '../../search/presentation/widgets/filter_chip_bar.dart';
 import '../../search/presentation/widgets/search_bar_widget.dart';
 import '../../streak/bloc/bloc.dart';
 import '../../streak/presentation/widgets/streak_milestone_dialog.dart';
@@ -76,62 +72,47 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) =>
-              StreakBloc(streakRepository: context.read<StreakRepository>())
-                ..add(const LoadStreak()),
-        ),
-        BlocProvider(
-          create: (context) => QuickCheckInBloc(
-            checkInRepository: context.read<QuickCheckInRepository>(),
-            streakRepository: context.read<StreakRepository>(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Journal'),
+        actions: [
+          // Calendar button
+          IconButton(
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const CalendarPage()));
+            },
+            tooltip: 'Calendar',
           ),
-        ),
-        BlocProvider(
-          create: (context) => SearchFilterBloc(
-            journalRepository: context.read<JournalRepository>(),
+          // Insights button
+          IconButton(
+            icon: const Icon(Icons.insights),
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const InsightsPage()));
+            },
+            tooltip: 'Insights',
           ),
+          // Favorites button
+          IconButton(
+            icon: const Icon(Icons.star_border),
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const FavoritesPage()));
+            },
+            tooltip: 'Favorites',
+          ),
+        ],
+      ),
+      body: BlocProvider(
+        create: (context) => SearchFilterBloc(
+          journalRepository: context.read<JournalRepository>(),
         ),
-      ],
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Your Journal'),
-          actions: [
-            // Calendar button
-            IconButton(
-              icon: const Icon(Icons.calendar_month),
-              onPressed: () {
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const CalendarPage()));
-              },
-              tooltip: 'Calendar',
-            ),
-            // Insights button
-            IconButton(
-              icon: const Icon(Icons.insights),
-              onPressed: () {
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const InsightsPage()));
-              },
-              tooltip: 'Insights',
-            ),
-            // Favorites button
-            IconButton(
-              icon: const Icon(Icons.star_border),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const FavoritesPage()),
-                );
-              },
-              tooltip: 'Favorites',
-            ),
-          ],
-        ),
-        body: BlocListener<StreakBloc, StreakState>(
+        child: BlocListener<StreakBloc, StreakState>(
           listener: (context, state) {
             // Show milestone dialog when reached
             if (state is StreakMilestoneReached) {
@@ -176,11 +157,6 @@ class _HomePageState extends State<HomePage> {
 
                   const SizedBox(height: 12),
 
-                  // Filter chip bar
-                  const FilterChipBar(),
-
-                  const SizedBox(height: 12),
-
                   // Content
                   Expanded(child: _buildContent(state)),
                 ],
@@ -188,49 +164,46 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        floatingActionButton: const QuickCheckInButton(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        bottomNavigationBar: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 1,
-                width: double.infinity,
-                color: AppTheme.darkTextSecondary.withOpacity(0.12),
+      ),
+      floatingActionButton: const QuickCheckInButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      bottomNavigationBar: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: AppTheme.darkTextSecondary.withOpacity(0.12),
+            ),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    icon: Icons.book_outlined,
+                    label: 'Journal',
+                    index: 0,
+                    isSelected: _selectedIndex == 0,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.add_circle_outline,
+                    label: 'New Entry',
+                    index: 1,
+                    isSelected: _selectedIndex == 1,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.person_outline,
+                    label: 'Profile',
+                    index: 2,
+                    isSelected: _selectedIndex == 2,
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 16,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(
-                      icon: Icons.book_outlined,
-                      label: 'Journal',
-                      index: 0,
-                      isSelected: _selectedIndex == 0,
-                    ),
-                    _buildNavItem(
-                      icon: Icons.add_circle_outline,
-                      label: 'New Entry',
-                      index: 1,
-                      isSelected: _selectedIndex == 1,
-                    ),
-                    _buildNavItem(
-                      icon: Icons.person_outline,
-                      label: 'Profile',
-                      index: 2,
-                      isSelected: _selectedIndex == 2,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -291,113 +264,76 @@ class _HomePageState extends State<HomePage> {
     if (state is JournalLoaded) {
       return BlocBuilder<SearchFilterBloc, SearchFilterState>(
         builder: (context, searchState) {
-          // Show filtered results if search is active
-          if (searchState is SearchFilterLoaded) {
-            return _buildFilteredList(searchState);
-          }
-
           if (searchState is SearchFilterEmpty) {
             return _buildEmptySearchState(searchState);
           }
 
-          // Show all entries by default
+          if (searchState is SearchFilterLoading) {
+            return Center(
+              child: CircularProgressIndicator(color: AppTheme.softBlue),
+            );
+          }
+
+          // Show all entries when no filters active (SearchFilterInitial)
           return RefreshIndicator(
             onRefresh: _onRefresh,
             color: AppTheme.brightBlue,
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              itemCount: state.entries.length,
-              itemBuilder: (context, index) {
-                final entry = state.entries[index];
-                return JournalEntryCard(
-                  entry: entry,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<JournalBloc>(),
-                          child: NewEntryPage(entry: entry),
+            child: state.entries.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Text(
+                        'No journal entries yet.\nStart by creating your first entry!',
+                        style: TextStyle(
+                          color: AppTheme.darkTextSecondary,
+                          fontSize: 16,
+                          height: 1.5,
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                    );
-                  },
-                  onFavoriteToggle: () {
-                    // Toggle favorite
-                    context.read<JournalBloc>().add(
-                      JournalEntryFavoriteToggled(
-                        entryId: entry.id,
-                        isFavorite: !entry.isFavorite,
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    itemCount: state.entries.length,
+                    itemBuilder: (context, index) {
+                      final entry = state.entries[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: JournalEntryCard(
+                          entry: entry,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<JournalBloc>(),
+                                  child: NewEntryPage(entry: entry),
+                                ),
+                              ),
+                            );
+                          },
+                          onFavoriteToggle: () {
+                            // Toggle favorite
+                            context.read<JournalBloc>().add(
+                              JournalEntryFavoriteToggled(
+                                entryId: entry.id,
+                                isFavorite: !entry.isFavorite,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
           );
         },
       );
     }
 
     return const SizedBox.shrink();
-  }
-
-  Widget _buildFilteredList(SearchFilterLoaded state) {
-    return RefreshIndicator(
-      onRefresh: _onRefresh,
-      color: AppTheme.brightBlue,
-      child: Column(
-        children: [
-          // Result count header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Text(
-                  '${state.results.length} ${state.results.length == 1 ? 'result' : 'results'}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.darkTextSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Results list
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: state.results.length,
-              itemBuilder: (context, index) {
-                final entry = state.results[index];
-                return JournalEntryCard(
-                  entry: entry,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<JournalBloc>(),
-                          child: NewEntryPage(entry: entry),
-                        ),
-                      ),
-                    );
-                  },
-                  onFavoriteToggle: () {
-                    context.read<JournalBloc>().add(
-                      JournalEntryFavoriteToggled(
-                        entryId: entry.id,
-                        isFavorite: !entry.isFavorite,
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildEmptySearchState(SearchFilterEmpty state) {

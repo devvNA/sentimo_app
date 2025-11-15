@@ -13,14 +13,13 @@
 **Key Files:**
 - `specs/PRD.md` - Product requirements
 - `technical_overview.md` - Architecture details
-- `PROGRESS.md` - Project timeline and history
 
 ---
 
 ## Critical Rules
 
 ✅ **ALWAYS consult all 3 files before work:**
-   - `specs/PRD.md` - Understand requirements
+   - `specs/PRD.md` - Understand requirements1
    - `technical_overview.md` - Follow architecture
 
 ✅ **MUST update PROGRESS.md before commits:**

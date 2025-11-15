@@ -4,6 +4,9 @@ import 'package:sentimo/core/widgets/error_view.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../data/repositories/journal_repository.dart';
+import '../../../data/services/sentiment_service.dart';
+import '../../journal/bloc/journal_bloc.dart';
+import '../../journal/presentation/new_entry_page.dart';
 import '../bloc/bloc.dart';
 import 'widgets/journal_entry_card.dart';
 
@@ -74,6 +77,31 @@ class FavoritesPage extends StatelessWidget {
                     final entry = state.favorites[index];
                     return JournalEntryCard(
                       entry: entry,
+                      onTap: () {
+                        // Navigate to NewEntryPage for viewing/editing
+                        final journalRepo = context.read<JournalRepository>();
+                        final sentimentService = context
+                            .read<SentimentService>();
+
+                        Navigator.of(context)
+                            .push(
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider(
+                                  create: (_) => JournalBloc(
+                                    journalRepo,
+                                    sentimentService,
+                                  ),
+                                  child: NewEntryPage(entry: entry),
+                                ),
+                              ),
+                            )
+                            .then((_) {
+                              // Refresh favorites when returning
+                              context.read<FavoritesBloc>().add(
+                                const RefreshFavorites(),
+                              );
+                            });
+                      },
                       onFavoriteToggle: () {
                         context.read<FavoritesBloc>().add(
                           ToggleFavorite(

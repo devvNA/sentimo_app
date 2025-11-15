@@ -32,6 +32,9 @@ class _NewEntryPageState extends State<NewEntryPage> {
   double? _analyzedScore;
   List<String>? _analyzedTags;
 
+  // Date selection state
+  DateTime _selectedDate = DateTime.now();
+
   bool get _isEditMode => widget.entry != null;
 
   @override
@@ -40,6 +43,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
     // Pre-populate data if editing
     if (_isEditMode) {
       _contentController.text = widget.entry!.content;
+      _selectedDate = widget.entry!.createdAt;
 
       // Load existing sentiment data
       _analyzedSentiment = widget.entry!.sentimentLabel;
@@ -52,6 +56,35 @@ class _NewEntryPageState extends State<NewEntryPage> {
   void dispose() {
     _contentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppTheme.brightBlue,
+              onPrimary: Colors.white,
+              surface: AppTheme.darkCard,
+              onSurface: AppTheme.darkText,
+            ),
+            dialogBackgroundColor: AppTheme.darkBackground,
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
   }
 
   Future<void> _handleAnalyze() async {
@@ -141,15 +174,16 @@ class _NewEntryPageState extends State<NewEntryPage> {
           );
         }
       } else {
-        log('💾 [NewEntryPage] Saving new entry');
+        log('💾 [NewEntryPage] Saving new entry with date: $_selectedDate');
 
-        // Create journal entry request with sentiment data
+        // Create journal entry request with sentiment data and selected date
         context.read<JournalBloc>().add(
           JournalCreateRequestedWithSentiment(
             content: _contentController.text.trim(),
             sentimentLabel: _analyzedSentiment?.name,
             sentimentScore: _analyzedScore,
             sentimentTags: _analyzedTags,
+            createdAt: _selectedDate,
           ),
         );
       }
@@ -239,7 +273,7 @@ class _NewEntryPageState extends State<NewEntryPage> {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMMM dd, yyyy');
-    final today = dateFormat.format(DateTime.now());
+    final displayDate = dateFormat.format(_selectedDate);
 
     return Scaffold(
       appBar: AppBar(
@@ -247,10 +281,36 @@ class _NewEntryPageState extends State<NewEntryPage> {
           icon: const Icon(Icons.close, size: 28),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          _isEditMode ? 'Edit Entry' : today,
-          style: TextStyle(fontSize: 20),
-        ),
+        title: _isEditMode
+            ? const Text('Edit Entry', style: TextStyle(fontSize: 18))
+            : InkWell(
+                onTap: _selectDate,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 18,
+                        color: AppTheme.brightBlue,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(displayDate, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        size: 20,
+                        color: AppTheme.darkTextSecondary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
         centerTitle: true,
       ),
       body: BlocConsumer<JournalBloc, JournalState>(

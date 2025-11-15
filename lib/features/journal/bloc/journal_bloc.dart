@@ -99,12 +99,14 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     log('✏️ [JournalBloc] Creating entry with sentiment...');
     log('   Content length: ${event.content.length} chars');
     log('   Sentiment: ${event.sentimentLabel ?? "none"}');
+    log('   Created at: ${event.createdAt ?? DateTime.now()}');
     emit(const JournalCreating());
     try {
-      // Create the journal entry WITH sentiment data
+      // Create the journal entry WITH sentiment data and custom date
       final entry = await _journalRepository.createJournalEntry(
         content: event.content,
         sentimentLabel: event.sentimentLabel,
+        createdAt: event.createdAt,
       );
 
       // If we have sentiment score and tags, update them

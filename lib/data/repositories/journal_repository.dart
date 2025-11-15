@@ -169,6 +169,7 @@ class JournalRepository {
   Future<JournalEntry> createJournalEntry({
     required String content,
     String? sentimentLabel,
+    DateTime? createdAt,
   }) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
@@ -177,14 +178,22 @@ class JournalRepository {
       }
 
       log('✏️ [JournalRepository] Creating entry...');
+      log('   Created at: ${createdAt ?? DateTime.now()}');
+
+      final insertData = {
+        'user_id': userId,
+        'content': content,
+        'sentiment_label': sentimentLabel,
+      };
+
+      // Add created_at if provided
+      if (createdAt != null) {
+        insertData['created_at'] = createdAt.toIso8601String();
+      }
 
       final response = await _supabase
           .from('journal_entries')
-          .insert({
-            'user_id': userId,
-            'content': content,
-            'sentiment_label': sentimentLabel,
-          })
+          .insert(insertData)
           .select()
           .single();
 

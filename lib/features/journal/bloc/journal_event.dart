@@ -29,12 +29,14 @@ class JournalCreateRequestedWithSentiment extends JournalEvent {
   final String? sentimentLabel;
   final double? sentimentScore;
   final List<String>? sentimentTags;
+  final DateTime? createdAt;
 
   const JournalCreateRequestedWithSentiment({
     required this.content,
     this.sentimentLabel,
     this.sentimentScore,
     this.sentimentTags,
+    this.createdAt,
   });
 
   @override
@@ -43,6 +45,7 @@ class JournalCreateRequestedWithSentiment extends JournalEvent {
     sentimentLabel,
     sentimentScore,
     sentimentTags,
+    createdAt,
   ];
 }
 
